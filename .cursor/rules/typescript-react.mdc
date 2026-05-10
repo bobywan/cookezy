@@ -1,0 +1,51 @@
+---
+description: Conventions TypeScript et composants React pour ce projet
+globs: **/*.{ts,tsx}
+alwaysApply: false
+---
+
+# TypeScript & React
+
+## Composants
+
+- Toujours des **fonctions nommées** exportées (pas d'export default anonyme)
+- Props typées inline ou avec un `type` local (pas d'interface sauf si l'extension est nécessaire)
+
+```tsx
+// ✅ BIEN
+type ButtonProps = {
+  label: string;
+  onClick?: () => void;
+};
+
+export function Button({ label, onClick }: ButtonProps) {
+  return <button onClick={onClick}>{label}</button>;
+}
+
+// ❌ MAL
+export default ({ label }: { label: string }) => <button>{label}</button>;
+```
+
+## Gestion des erreurs async
+
+```typescript
+// ✅ BIEN
+try {
+  const data = await fetchData();
+  return data;
+} catch (error) {
+  console.error("fetchData failed", error);
+  throw error;
+}
+
+// ❌ MAL
+try {
+  return await fetchData();
+} catch {}
+```
+
+## Fichiers
+
+- Composants : `PascalCase.tsx`
+- Utilitaires / hooks : `camelCase.ts`
+- Dossiers : `kebab-case/`

@@ -1,0 +1,19 @@
+---
+description: Stack et conventions globales du projet
+alwaysApply: true
+---
+
+# Stack du projet
+
+- **Framework** : Next.js (App Router) — lire `node_modules/next/dist/docs/` avant d'écrire du code
+- **Langage** : TypeScript strict, pas de `any` explicite
+- **Style** : Tailwind CSS v4 — pas de config file, classes utilitaires directement en JSX
+- **Lint/Format** : BiomeJS v2 — ne jamais ajouter ESLint ou Prettier
+- **Node** : >= 24 LTS
+
+## Règles absolues
+
+- Toujours utiliser des **Server Components** par défaut ; n'ajouter `"use client"` que si vraiment nécessaire
+- Imports : utiliser l'alias `@/` pour les chemins internes
+- Ne jamais utiliser `var` ; préférer `const`, sinon `let`
+- Les types s'importent avec `import type`

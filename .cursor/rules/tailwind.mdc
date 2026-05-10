@@ -1,0 +1,39 @@
+---
+description: Conventions Tailwind CSS v4 pour ce projet
+globs: **/*.{tsx,css}
+alwaysApply: false
+---
+
+# Tailwind CSS v4
+
+## Points clés v4
+
+- **Pas de `tailwind.config.js`** — la config se fait via des directives CSS dans `globals.css`
+- Import via `@import "tailwindcss"` (pas de `@tailwind base/components/utilities`)
+- Les thèmes custom se déclarent avec `@theme` dans le CSS
+
+## Bonnes pratiques
+
+```tsx
+// ✅ Classes utilitaires directement en JSX
+<button className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
+  Action
+</button>
+
+// ✅ Variantes responsive
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+
+// ❌ Ne pas mélanger avec du CSS inline pour le style
+<div style={{ color: "red" }}>  {/* utiliser text-red-500 à la place */}
+```
+
+## Thème custom (dans globals.css)
+
+```css
+@import "tailwindcss";
+
+@theme {
+  --color-brand: #6366f1;
+  --font-sans: "Inter", sans-serif;
+}
+```

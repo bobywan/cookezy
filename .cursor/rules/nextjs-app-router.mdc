@@ -1,0 +1,50 @@
+---
+description: Conventions Next.js App Router — routing, data fetching, layouts
+globs: app/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Next.js App Router
+
+## Structure `app/`
+
+```
+app/
+├── layout.tsx          # Layout racine (HTML, body)
+├── page.tsx            # Page /
+├── (groupe)/           # Route group (pas dans l'URL)
+│   └── page.tsx
+└── [slug]/             # Segment dynamique
+    └── page.tsx
+```
+
+## Data fetching
+
+- Fetch directement dans les Server Components — pas besoin de `useEffect`
+- Utiliser `cache: "no-store"` pour les données dynamiques, `revalidate` pour l'ISR
+
+```typescript
+// ✅ Server Component
+export default async function Page() {
+  const data = await fetch("https://api.example.com/data", {
+    next: { revalidate: 60 },
+  }).then((r) => r.json());
+  return <div>{data.title}</div>;
+}
+```
+
+## Metadata
+
+Toujours exporter `metadata` ou `generateMetadata` dans chaque `page.tsx` :
+
+```typescript
+export const metadata = {
+  title: "Titre de la page",
+  description: "Description courte",
+};
+```
+
+## Variables d'env
+
+- `NEXT_PUBLIC_*` côté client uniquement
+- Les autres sont serveur-only et ne doivent jamais être exposées dans le bundle client
