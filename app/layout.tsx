@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "boby-boilerplate",
-  description: "Next.js boilerplate",
+  title: "Cookezy — Mes recettes",
+  description: "Mon carnet de recettes personnel.",
 };
 
 export default function RootLayout({

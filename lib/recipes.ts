@@ -1,0 +1,117 @@
+import type { Recipe } from "@/lib/types";
+
+export const recipes: Recipe[] = [
+  {
+    id: "1",
+    slug: "crepes",
+    title: "Crêpes",
+    description:
+      "La recette classique de crêpes bretonnes, légères et dorées. Parfaites pour le dessert ou le goûter.",
+    image:
+      "https://images.unsplash.com/photo-1519676867240-f03562e64548?w=800&q=80",
+    category: "dessert",
+    difficulty: "facile",
+    prepTime: 10,
+    cookTime: 20,
+    servings: 4,
+    ingredients: [
+      { quantity: 250, unit: "g", name: "farine" },
+      { quantity: 3, unit: "", name: "œufs" },
+      { quantity: 500, unit: "ml", name: "lait" },
+      { quantity: 50, unit: "g", name: "beurre fondu" },
+      { quantity: 1, unit: "pincée", name: "sel" },
+      { quantity: 1, unit: "c. à soupe", name: "sucre" },
+    ],
+    steps: [
+      "Dans un grand bol, mélanger la farine et le sel, puis creuser un puits au centre.",
+      "Casser les œufs dans le puits et fouetter en incorporant progressivement la farine.",
+      "Ajouter le lait petit à petit tout en fouettant pour obtenir une pâte lisse et sans grumeaux.",
+      "Incorporer le beurre fondu et le sucre, puis laisser reposer 30 minutes.",
+      "Faire chauffer une poêle légèrement huilée à feu moyen.",
+      "Verser une louche de pâte et incliner la poêle pour répartir uniformément.",
+      "Cuire 1 à 2 minutes jusqu'à ce que les bords se décollent, puis retourner et cuire encore 1 minute.",
+      "Répéter jusqu'à épuisement de la pâte.",
+    ],
+    tags: ["végétarien", "rapide", "classique"],
+  },
+  {
+    id: "2",
+    slug: "poulet-roti",
+    title: "Poulet Rôti",
+    description:
+      "Un poulet rôti fondant et croustillant, parfumé aux herbes fraîches et à l'ail. Le plat du dimanche par excellence.",
+    image:
+      "https://images.unsplash.com/photo-1598103442097-8b74394b95c3?w=800&q=80",
+    category: "plat",
+    difficulty: "moyen",
+    prepTime: 15,
+    cookTime: 90,
+    servings: 4,
+    ingredients: [
+      { quantity: 1, unit: "", name: "poulet entier (environ 1,5 kg)" },
+      { quantity: 4, unit: "gousses", name: "ail" },
+      { quantity: 50, unit: "g", name: "beurre mou" },
+      { quantity: 2, unit: "c. à soupe", name: "huile d'olive" },
+      { quantity: 1, unit: "", name: "citron" },
+      { quantity: 4, unit: "branches", name: "thym frais" },
+      { quantity: 2, unit: "branches", name: "romarin" },
+      { quantity: 1, unit: "c. à café", name: "paprika" },
+      { quantity: 1, unit: "c. à café", name: "sel" },
+      { quantity: 0.5, unit: "c. à café", name: "poivre noir" },
+    ],
+    steps: [
+      "Préchauffer le four à 200°C (thermostat 6-7).",
+      "Mélanger le beurre mou avec l'ail écrasé, le paprika, le sel et le poivre.",
+      "Glisser délicatement ce mélange sous la peau du poulet en massant bien.",
+      "Badigeonner l'extérieur du poulet avec l'huile d'olive.",
+      "Farcir l'intérieur avec le citron coupé en deux, le thym et le romarin.",
+      "Ficeler les cuisses du poulet et le placer dans un plat à rôtir.",
+      "Enfourner 1h30 en arrosant régulièrement avec le jus de cuisson toutes les 20 minutes.",
+      "Vérifier la cuisson en piquant la cuisse : le jus doit être clair.",
+      "Laisser reposer 10 minutes sous une feuille d'aluminium avant de découper.",
+    ],
+    tags: ["viande", "dimanche", "four"],
+  },
+  {
+    id: "3",
+    slug: "tarte-au-citron",
+    title: "Tarte au Citron Meringuée",
+    description:
+      "Une tarte acidulée et sucrée avec sa crème au citron onctueuse et sa meringue légèrement dorée.",
+    image:
+      "https://images.unsplash.com/photo-1464305795204-6f5bbfc7fb81?w=800&q=80",
+    category: "dessert",
+    difficulty: "difficile",
+    prepTime: 45,
+    cookTime: 30,
+    servings: 6,
+    ingredients: [
+      { quantity: 200, unit: "g", name: "farine (pâte sablée)" },
+      { quantity: 100, unit: "g", name: "beurre froid (pâte sablée)" },
+      { quantity: 50, unit: "g", name: "sucre glace (pâte sablée)" },
+      { quantity: 1, unit: "", name: "œuf (pâte sablée)" },
+      { quantity: 3, unit: "", name: "citrons (jus + zeste)" },
+      { quantity: 3, unit: "", name: "œufs (crème citron)" },
+      { quantity: 150, unit: "g", name: "sucre (crème citron)" },
+      { quantity: 80, unit: "g", name: "beurre (crème citron)" },
+      { quantity: 3, unit: "", name: "blancs d'œufs (meringue)" },
+      { quantity: 150, unit: "g", name: "sucre (meringue)" },
+    ],
+    steps: [
+      "Préparer la pâte sablée : sabler la farine avec le beurre froid, ajouter le sucre glace et l'œuf, former une boule et réfrigérer 30 minutes.",
+      "Étaler la pâte dans un moule à tarte de 24 cm, piquer le fond et cuire à blanc 15 min à 180°C.",
+      "Préparer la crème citron : fouetter les œufs avec le sucre, ajouter le jus et les zestes de citron.",
+      "Faire chauffer la crème à feu doux en remuant constamment jusqu'à épaississement.",
+      "Hors du feu, incorporer le beurre en morceaux. Verser sur le fond de tarte refroidi.",
+      "Réfrigérer la tarte 2 heures.",
+      "Préparer la meringue : monter les blancs en neige ferme en incorporant le sucre progressivement.",
+      "Recouvrir la tarte de meringue à l'aide d'une poche à douille ou d'une spatule.",
+      "Dorer au chalumeau ou sous le gril du four 2 à 3 minutes. Servir frais.",
+    ],
+    tags: ["citron", "pâtisserie", "fête"],
+  },
+];
+
+export function getRecipeBySlug(slug: string): Recipe | undefined {
+  return recipes.find((r) => r.slug === slug);
+}
