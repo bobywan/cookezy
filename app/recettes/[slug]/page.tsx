@@ -1,9 +1,9 @@
-import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import type { Metadata } from "next";
-import { getRecipeBySlug, recipes } from "@/lib/recipes";
+import { notFound } from "next/navigation";
 import ServingsScaler from "@/components/ServingsScaler";
+import { getRecipeBySlug, recipes } from "@/lib/recipes";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -38,11 +38,11 @@ export default async function RecipePage({ params }: Props) {
   const totalTime = recipe.prepTime + recipe.cookTime;
 
   return (
-    <div className="min-h-screen bg-amber-50">
-      <header className="border-b border-amber-100 bg-white px-6 py-4">
+    <div className="min-h-dvh bg-brand-50 pb-safe">
+      <header className="sticky top-0 z-20 px-safe pt-safe pb-3 md:static md:px-6 md:py-4">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-sm text-amber-700 hover:text-amber-900"
+          className="inline-flex min-h-11 min-w-11 items-center gap-2 rounded-[--radius-badge] py-2 pr-2 text-sm font-medium text-brand-700 touch-manipulation hover:bg-brand-50 hover:text-brand-800 active:bg-brand-100 md:min-h-0 md:min-w-0 md:p-0 md:hover:bg-transparent"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -62,50 +62,48 @@ export default async function RecipePage({ params }: Props) {
         </Link>
       </header>
 
-      <article className="mx-auto max-w-3xl px-4 py-10">
-        {/* Hero image */}
-        <div className="relative mb-8 h-64 w-full overflow-hidden rounded-2xl sm:h-80">
+      <article className="mx-auto max-w-3xl px-safe py-5 md:py-10 xl:max-w-4xl">
+        <div className="relative mb-6 aspect-[4/3] w-full min-h-48 overflow-hidden rounded-[--radius-card] sm:min-h-56 md:mb-8 md:aspect-auto md:h-72 md:min-h-0 lg:h-80">
           <Image
             src={recipe.image}
             alt={recipe.title}
             fill
             className="object-cover"
             priority
-            sizes="(max-width: 768px) 100vw, 768px"
+            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 90vw, 896px"
           />
         </div>
 
-        {/* Title & meta */}
         <div className="mb-8">
           <div className="mb-3 flex flex-wrap gap-2">
-            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
+            <span className="rounded-[--radius-badge] bg-brand-100 px-2.5 py-0.5 text-xs font-medium text-brand-700">
               {recipe.category}
             </span>
             <span
-              className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${difficultyColor[recipe.difficulty]}`}
+              className={`rounded-[--radius-badge] px-2.5 py-0.5 text-xs font-medium ${difficultyColor[recipe.difficulty]}`}
             >
               {recipe.difficulty}
             </span>
             {recipe.tags.map((tag) => (
               <span
                 key={tag}
-                className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs text-gray-600"
+                className="rounded-[--radius-badge] bg-neutral-100 px-2.5 py-0.5 text-xs text-neutral-600"
               >
                 #{tag}
               </span>
             ))}
           </div>
 
-          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+          <h1 className="font-display text-2xl font-bold leading-tight text-neutral-900 sm:text-3xl lg:text-4xl">
             {recipe.title}
           </h1>
-          <p className="mt-3 text-gray-500">{recipe.description}</p>
+          <p className="mt-2 text-base text-neutral-500 md:mt-3 md:text-lg">{recipe.description}</p>
 
-          <div className="mt-5 flex flex-wrap gap-6 text-sm text-gray-600">
+          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-3 text-sm text-neutral-600 md:mt-5 md:gap-6">
             <div className="flex items-center gap-1.5">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 text-amber-500"
+                className="h-4 w-4 text-brand-500"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -122,7 +120,7 @@ export default async function RecipePage({ params }: Props) {
             <div className="flex items-center gap-1.5">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 text-amber-500"
+                className="h-4 w-4 text-brand-500"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -139,7 +137,7 @@ export default async function RecipePage({ params }: Props) {
             <div className="flex items-center gap-1.5">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 text-amber-500"
+                className="h-4 w-4 text-brand-500"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -156,31 +154,26 @@ export default async function RecipePage({ params }: Props) {
           </div>
         </div>
 
-        <div className="grid gap-10 md:grid-cols-2">
-          {/* Ingredients + scaler */}
+        <div className="grid gap-8 md:gap-10 lg:grid-cols-2 lg:gap-12">
           <section>
-            <h2 className="mb-4 text-xl font-semibold text-gray-900">
+            <h2 className="mb-3 text-lg font-semibold text-neutral-900 md:mb-4 md:text-xl">
               Ingrédients
             </h2>
-            <ServingsScaler
-              baseServings={recipe.servings}
-              ingredients={recipe.ingredients}
-            />
+            <ServingsScaler baseServings={recipe.servings} ingredients={recipe.ingredients} />
           </section>
 
-          {/* Steps */}
           <section>
-            <h2 className="mb-4 text-xl font-semibold text-gray-900">
+            <h2 className="mb-3 text-lg font-semibold text-neutral-900 md:mb-4 md:text-xl">
               Préparation
             </h2>
-            <ol className="space-y-4">
+            <ol className="space-y-5 md:space-y-4">
               {recipe.steps.map((step, index) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: ordered steps
-                <li key={index} className="flex gap-3">
-                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-500 text-xs font-bold text-white">
+                <li key={index} className="flex gap-3.5 md:gap-3">
+                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-[--radius-badge] bg-brand-500 text-sm font-bold text-white md:h-7 md:w-7 md:text-xs">
                     {index + 1}
                   </span>
-                  <p className="text-sm leading-relaxed text-gray-700">{step}</p>
+                  <p className="text-base leading-relaxed text-neutral-700 md:text-sm">{step}</p>
                 </li>
               ))}
             </ol>

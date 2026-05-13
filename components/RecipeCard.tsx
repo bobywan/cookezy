@@ -1,5 +1,5 @@
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import type { Recipe } from "@/lib/types";
 
 type Props = {
@@ -13,10 +13,10 @@ const difficultyColor: Record<Recipe["difficulty"], string> = {
 };
 
 const categoryColor: Record<Recipe["category"], string> = {
-  entrée: "bg-purple-100 text-purple-800",
-  plat: "bg-blue-100 text-blue-800",
-  dessert: "bg-pink-100 text-pink-800",
-  snack: "bg-orange-100 text-orange-800",
+  entrée: "bg-accent-100 text-accent-600",
+  plat: "bg-brand-100 text-brand-700",
+  dessert: "bg-accent-100 text-accent-600",
+  snack: "bg-brand-100 text-brand-700",
 };
 
 export default function RecipeCard({ recipe }: Props) {
@@ -25,42 +25,42 @@ export default function RecipeCard({ recipe }: Props) {
   return (
     <Link
       href={`/recettes/${recipe.slug}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md"
+      className="group flex touch-manipulation flex-col overflow-hidden rounded-[--radius-card] border border-neutral-200 bg-white shadow-[--shadow-card] transition-[box-shadow,transform] active:scale-[0.99] hover:shadow-md md:active:scale-100"
     >
-      <div className="relative h-48 w-full overflow-hidden">
+      <div className="relative aspect-[5/4] w-full overflow-hidden md:aspect-auto md:h-48 xl:h-52">
         <Image
           src={recipe.image}
           alt={recipe.title}
           fill
           className="object-cover transition-transform duration-300 group-hover:scale-105"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          sizes="(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 33vw"
         />
       </div>
 
-      <div className="flex flex-1 flex-col gap-3 p-4">
+      <div className="flex flex-1 flex-col gap-2.5 p-4 md:gap-3 md:p-5">
         <div className="flex flex-wrap gap-2">
           <span
-            className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${categoryColor[recipe.category]}`}
+            className={`rounded-[--radius-badge] px-2.5 py-0.5 text-xs font-medium ${categoryColor[recipe.category]}`}
           >
             {recipe.category}
           </span>
           <span
-            className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${difficultyColor[recipe.difficulty]}`}
+            className={`rounded-[--radius-badge] px-2.5 py-0.5 text-xs font-medium ${difficultyColor[recipe.difficulty]}`}
           >
             {recipe.difficulty}
           </span>
         </div>
 
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 group-hover:text-amber-600 transition-colors">
+          <h2 className="font-display text-base font-semibold text-neutral-900 transition-colors group-hover:text-brand-600 md:text-lg">
             {recipe.title}
           </h2>
-          <p className="mt-1 line-clamp-2 text-sm text-gray-500">
+          <p className="mt-1 line-clamp-2 text-sm text-neutral-500 md:line-clamp-3">
             {recipe.description}
           </p>
         </div>
 
-        <div className="mt-auto flex items-center gap-4 text-sm text-gray-500">
+        <div className="mt-auto flex items-center gap-4 text-sm text-neutral-500">
           <span className="flex items-center gap-1">
             <svg
               xmlns="http://www.w3.org/2000/svg"

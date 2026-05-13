@@ -7,8 +7,7 @@ export const recipes: Recipe[] = [
     title: "Crêpes",
     description:
       "La recette classique de crêpes bretonnes, légères et dorées. Parfaites pour le dessert ou le goûter.",
-    image:
-      "https://images.unsplash.com/photo-1519676867240-f03562e64548?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1519676867240-f03562e64548?w=800&q=80",
     category: "dessert",
     difficulty: "facile",
     prepTime: 10,
@@ -40,8 +39,7 @@ export const recipes: Recipe[] = [
     title: "Poulet Rôti",
     description:
       "Un poulet rôti fondant et croustillant, parfumé aux herbes fraîches et à l'ail. Le plat du dimanche par excellence.",
-    image:
-      "https://images.unsplash.com/photo-1598103442097-8b74394b95c3?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=800&q=80",
     category: "plat",
     difficulty: "moyen",
     prepTime: 15,
@@ -78,8 +76,7 @@ export const recipes: Recipe[] = [
     title: "Tarte au Citron Meringuée",
     description:
       "Une tarte acidulée et sucrée avec sa crème au citron onctueuse et sa meringue légèrement dorée.",
-    image:
-      "https://images.unsplash.com/photo-1464305795204-6f5bbfc7fb81?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1464305795204-6f5bbfc7fb81?w=800&q=80",
     category: "dessert",
     difficulty: "difficile",
     prepTime: 45,

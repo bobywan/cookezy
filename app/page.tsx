@@ -9,19 +9,18 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-amber-50">
-      <header className="border-b border-amber-100 bg-white px-6 py-8 text-center">
-        <h1 className="text-4xl font-bold tracking-tight text-amber-700">
+    <main className="min-h-dvh bg-brand-50 pb-safe">
+      <header className="px-safe pt-safe pb-4 text-center md:pb-5">
+        <h1 className="font-display text-3xl font-bold tracking-tight text-brand-700 md:text-4xl">
           Cookezy
         </h1>
-        <p className="mt-2 text-gray-500">Mon carnet de recettes personnel</p>
       </header>
 
-      <section className="mx-auto max-w-5xl px-4 py-10">
-        <p className="mb-6 text-sm text-gray-400">
+      <section className="mx-auto max-w-5xl px-safe py-6 md:py-10 xl:max-w-6xl">
+        <p className="mb-4 text-xs text-neutral-400 md:mb-6 md:text-sm">
           {recipes.length} recette{recipes.length > 1 ? "s" : ""}
         </p>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-3">
           {recipes.map((recipe) => (
             <RecipeCard key={recipe.id} recipe={recipe} />
           ))}

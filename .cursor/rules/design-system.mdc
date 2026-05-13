@@ -1,0 +1,109 @@
+---
+description: Design system Cookezy — palette, typographie, tokens. Appliquer sur toute création ou modification de composant ou de page.
+globs:
+  - "**/*.tsx"
+  - "**/*.css"
+alwaysApply: true
+---
+
+# Design System Cookezy
+
+## Principes
+
+- Ne jamais hardcoder une valeur hexadécimale dans du JSX ou du CSS.
+- Ne jamais utiliser directement les palettes Tailwind brutes `amber-*`, `gray-*`, `rose-*`, `stone-*`. Utiliser uniquement les tokens sémantiques ci-dessous.
+- Toujours utiliser `font-display` pour les titres de recettes (`h1`, `h2` importants) et `font-sans` (défaut) pour le reste.
+
+---
+
+## Couleurs
+
+### Brand — amber pastel (couleur principale)
+
+| Token | Classe Tailwind | Usage |
+|---|---|---|
+| `--color-brand-50` | `bg-brand-50` | Fond de page, arrière-plans doux |
+| `--color-brand-100` | `bg-brand-100` / `border-brand-100` | Fond de badge, bordures légères |
+| `--color-brand-200` | `bg-brand-200` | Hover de fond subtil |
+| `--color-brand-500` | `bg-brand-500` / `text-brand-500` | Icônes, bullet points numérotés |
+| `--color-brand-600` | `text-brand-600` | Liens, textes d'action |
+| `--color-brand-700` | `text-brand-700` | Titres principaux, valeurs mises en avant |
+| `--color-brand-800` | `text-brand-800` | Hover sur les liens brand |
+
+### Accent — rose pastel (couleur secondaire)
+
+| Token | Classe Tailwind | Usage |
+|---|---|---|
+| `--color-accent-50` | `bg-accent-50` | Fond très léger |
+| `--color-accent-100` | `bg-accent-100` | Badge catégorie entrée/dessert |
+| `--color-accent-200` | `bg-accent-200` | Hover d'accent |
+| `--color-accent-600` | `text-accent-600` | Texte sur badge accent |
+
+### Neutral — stone chaud (textes et surfaces)
+
+| Token | Classe Tailwind | Usage |
+|---|---|---|
+| `--color-neutral-50` | `bg-neutral-50` | Fond body par défaut |
+| `--color-neutral-100` | `bg-neutral-100` | Fond de badge tag |
+| `--color-neutral-200` | `border-neutral-200` / `divide-neutral-200` | Bordures de cartes, séparateurs |
+| `--color-neutral-400` | `text-neutral-400` | Textes très secondaires, compteurs |
+| `--color-neutral-500` | `text-neutral-500` | Descriptions, sous-titres |
+| `--color-neutral-600` | `text-neutral-600` | Métadonnées, labels |
+| `--color-neutral-700` | `text-neutral-700` | Corps de texte principal |
+| `--color-neutral-900` | `text-neutral-900` | Titres de sections |
+
+---
+
+## Typographie
+
+### Polices
+
+| Famille | Variable CSS | Classe Tailwind | Usage |
+|---|---|---|---|
+| Playfair Display (serif) | `--font-playfair` | `font-display` | Titres de recettes (`h1`, `h2` hero) |
+| DM Sans (sans-serif) | `--font-dm-sans` | `font-sans` | Tout le reste (UI, corps, labels) |
+
+### Échelle de tailles conseillée
+
+| Classe | Taille | Usage |
+|---|---|---|
+| `text-xs` | 12px | Badges, labels, tags |
+| `text-sm` | 14px | Métadonnées, descriptions secondaires, étapes |
+| `text-base` | 16px | Corps principal |
+| `text-lg` / `text-xl` | 18–20px | Sous-titres de section |
+| `text-2xl` / `text-3xl` | 24–30px | Titres de page intermédiaires |
+| `text-4xl` | 36px | Titre hero |
+
+---
+
+## Radius et ombres
+
+| Token | Valeur | Classe Tailwind | Usage |
+|---|---|---|---|
+| `--radius-card` | `1rem` | `rounded-[--radius-card]` | Cartes, images hero, listes ingrédients |
+| `--radius-badge` | `9999px` | `rounded-[--radius-badge]` ou `rounded-full` | Badges, boutons circulaires |
+| `--shadow-card` | `0 1px 4px 0 rgb(0 0 0 / .06)` | `shadow-[--shadow-card]` | Cartes au repos |
+
+---
+
+## Conventions de composants
+
+### Carte de recette
+- Fond `bg-white`, bordure `border-neutral-200`, ombre `shadow-[--shadow-card]`
+- Radius `rounded-[--radius-card]`
+- Titre avec `font-display`, hover `text-brand-600`
+- Badges avec `rounded-[--radius-badge]`
+
+### Badge de catégorie
+- plat / snack → `bg-brand-100 text-brand-700`
+- entrée / dessert → `bg-accent-100 text-accent-600`
+
+### Badge de difficulté
+- facile → `bg-green-100 text-green-800`
+- moyen → `bg-yellow-100 text-yellow-800`
+- difficile → `bg-red-100 text-red-800`
+
+### Page / section
+- Fond de page → `bg-brand-50`
+- Header → `bg-white border-b border-brand-100`
+- Titre logo → `font-display text-brand-700`
