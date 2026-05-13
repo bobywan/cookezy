@@ -1,0 +1,57 @@
+---
+description: Modèle et checklist pour ajouter une recette dans le carnet Cookezy.
+globs:
+  - "lib/recipes.ts"
+  - "lib/types.ts"
+  - "content/recipes/*.json"
+---
+
+# Données recettes (modèle Cookezy)
+
+Le schéma TypeScript est la source de vérité : types `Recipe` et `Ingredient` dans [`lib/types.ts`](lib/types.ts). Chaque recette est un fichier JSON dans [`content/recipes/`](content/recipes/) (nom du fichier = `slug` + `.json`, en **kebab-case**). Le fichier [`lib/recipes.ts`](lib/recipes.ts) importe ces JSON et exporte le tableau `recipes` + `getRecipeBySlug`.
+
+## Checklist à chaque nouvelle recette
+
+- **Fichier** : `content/recipes/<slug>.json` (ex. `content/recipes/tarte-pommes.json`).
+- **`id`** : chaîne unique parmi toutes les recettes (ex. `"4"`).
+- **`slug`** : identique au nom de fichier sans `.json`, unique, **kebab-case** ; utilisé dans l’URL `/recettes/[slug]` et par `generateStaticParams`.
+- **`title`** : titre affiché (typo française cohérente avec le site).
+- **`description`** : court paragraphe pour cartes et meta.
+- **`image`** : chemin absolu du site (ex. `/images/recettes/mon-slug.jpg`) ou URL absolue HTTPS ; pour les fichiers locaux, placer l’image sous `public/images/recettes/`.
+- **`category`** : exactement une de `entrée` | `plat` | `dessert` | `snack`.
+- **`difficulty`** : `facile` | `moyen` | `difficile`.
+- **`prepTime` / `cookTime`** : minutes, nombres entiers (0 si aucune).
+- **`servings`** : nombre de portions de référence pour le scaler d’ingrédients.
+- **`ingredients`** : liste d’objets `{ "quantity", "unit", "name" }` — `unit` peut être `""` (ex. œufs) ; noms en minuscules sauf noms propres.
+- **`steps`** : tableau de chaînes, **un élément = une étape**, ordre = ordre d’affichage et mode pas à pas.
+- **`tags`** : quelques mots-clés en minuscules, sans `#` dans la donnée (le `#` est ajouté en UI si besoin).
+
+Après ajout : dans [`lib/recipes.ts`](lib/recipes.ts), ajouter `import maRecette from "@/content/recipes/<slug>.json"` et inclure `maRecette` dans le tableau `recipes`. Vérifier qu’aucun doublon de `slug` / `id` ; la page `/recettes/[slug]` est générée statiquement à partir de ce tableau.
+
+## Modèle à copier-coller (`content/recipes/nom-en-kebab.json`)
+
+JSON valide (guillemets doubles, pas de virgule finale).
+
+```json
+{
+  "id": "REMPLACER",
+  "slug": "nom-en-kebab",
+  "title": "Titre de la recette",
+  "description": "Une ou deux phrases pour la carte et le SEO.",
+  "image": "/images/recettes/nom-en-kebab.jpg",
+  "category": "plat",
+  "difficulty": "moyen",
+  "prepTime": 15,
+  "cookTime": 30,
+  "servings": 4,
+  "ingredients": [
+    { "quantity": 200, "unit": "g", "name": "ingrédient exemple" },
+    { "quantity": 2, "unit": "", "name": "éléments sans unité" }
+  ],
+  "steps": [
+    "Première étape, claire et actionnable.",
+    "Deuxième étape."
+  ],
+  "tags": ["tag-un", "tag-deux"]
+}
+```

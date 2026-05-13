@@ -1,0 +1,36 @@
+{
+  "id": "2",
+  "slug": "poulet-roti",
+  "title": "Poulet Rôti",
+  "description": "Un poulet rôti fondant et croustillant, parfumé aux herbes fraîches et à l'ail. Le plat du dimanche par excellence.",
+  "image": "/images/recettes/poulet-roti.jpg",
+  "category": "plat",
+  "difficulty": "moyen",
+  "prepTime": 15,
+  "cookTime": 90,
+  "servings": 4,
+  "ingredients": [
+    { "quantity": 1, "unit": "", "name": "poulet entier (environ 1,5 kg)" },
+    { "quantity": 4, "unit": "gousses", "name": "ail" },
+    { "quantity": 50, "unit": "g", "name": "beurre mou" },
+    { "quantity": 2, "unit": "c. à soupe", "name": "huile d'olive" },
+    { "quantity": 1, "unit": "", "name": "citron" },
+    { "quantity": 4, "unit": "branches", "name": "thym frais" },
+    { "quantity": 2, "unit": "branches", "name": "romarin" },
+    { "quantity": 1, "unit": "c. à café", "name": "paprika" },
+    { "quantity": 1, "unit": "c. à café", "name": "sel" },
+    { "quantity": 0.5, "unit": "c. à café", "name": "poivre noir" }
+  ],
+  "steps": [
+    "Préchauffer le four à 200°C (thermostat 6-7).",
+    "Mélanger le beurre mou avec l'ail écrasé, le paprika, le sel et le poivre.",
+    "Glisser délicatement ce mélange sous la peau du poulet en massant bien.",
+    "Badigeonner l'extérieur du poulet avec l'huile d'olive.",
+    "Farcir l'intérieur avec le citron coupé en deux, le thym et le romarin.",
+    "Ficeler les cuisses du poulet et le placer dans un plat à rôtir.",
+    "Enfourner 1h30 en arrosant régulièrement avec le jus de cuisson toutes les 20 minutes.",
+    "Vérifier la cuisson en piquant la cuisse : le jus doit être clair.",
+    "Laisser reposer 10 minutes sous une feuille d'aluminium avant de découper."
+  ],
+  "tags": ["viande", "dimanche", "four"]
+}

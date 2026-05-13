@@ -1,0 +1,36 @@
+{
+  "id": "3",
+  "slug": "tarte-au-citron",
+  "title": "Tarte au Citron Meringuée",
+  "description": "Une tarte acidulée et sucrée avec sa crème au citron onctueuse et sa meringue légèrement dorée.",
+  "image": "/images/recettes/tarte-au-citron.jpg",
+  "category": "dessert",
+  "difficulty": "difficile",
+  "prepTime": 45,
+  "cookTime": 30,
+  "servings": 6,
+  "ingredients": [
+    { "quantity": 200, "unit": "g", "name": "farine (pâte sablée)" },
+    { "quantity": 100, "unit": "g", "name": "beurre froid (pâte sablée)" },
+    { "quantity": 50, "unit": "g", "name": "sucre glace (pâte sablée)" },
+    { "quantity": 1, "unit": "", "name": "œuf (pâte sablée)" },
+    { "quantity": 3, "unit": "", "name": "citrons (jus + zeste)" },
+    { "quantity": 3, "unit": "", "name": "œufs (crème citron)" },
+    { "quantity": 150, "unit": "g", "name": "sucre (crème citron)" },
+    { "quantity": 80, "unit": "g", "name": "beurre (crème citron)" },
+    { "quantity": 3, "unit": "", "name": "blancs d'œufs (meringue)" },
+    { "quantity": 150, "unit": "g", "name": "sucre (meringue)" }
+  ],
+  "steps": [
+    "Préparer la pâte sablée : sabler la farine avec le beurre froid, ajouter le sucre glace et l'œuf, former une boule et réfrigérer 30 minutes.",
+    "Étaler la pâte dans un moule à tarte de 24 cm, piquer le fond et cuire à blanc 15 min à 180°C.",
+    "Préparer la crème citron : fouetter les œufs avec le sucre, ajouter le jus et les zestes de citron.",
+    "Faire chauffer la crème à feu doux en remuant constamment jusqu'à épaississement.",
+    "Hors du feu, incorporer le beurre en morceaux. Verser sur le fond de tarte refroidi.",
+    "Réfrigérer la tarte 2 heures.",
+    "Préparer la meringue : monter les blancs en neige ferme en incorporant le sucre progressivement.",
+    "Recouvrir la tarte de meringue à l'aide d'une poche à douille ou d'une spatule.",
+    "Dorer au chalumeau ou sous le gril du four 2 à 3 minutes. Servir frais."
+  ],
+  "tags": ["citron", "pâtisserie", "fête"]
+}

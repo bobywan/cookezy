@@ -22,7 +22,7 @@ export default function IngredientList({ ingredients, ratio }: Props) {
           <li
             // biome-ignore lint/suspicious/noArrayIndexKey: static list with no reordering
             key={index}
-            className="flex min-h-12 items-center justify-between gap-3 px-4 py-3 text-sm md:min-h-0 md:py-2.5"
+            className="flex min-h-12 items-center justify-between gap-3 px-4 py-3 text-base md:min-h-0 md:py-2.5"
           >
             <span className="text-neutral-700">{ingredient.name}</span>
             <span className="font-medium text-brand-700">

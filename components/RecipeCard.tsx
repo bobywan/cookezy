@@ -1,22 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
+import { categoryBadgeClass, difficultyBadgeClass } from "@/lib/recipe-badges";
 import type { Recipe } from "@/lib/types";
 
 type Props = {
   recipe: Recipe;
-};
-
-const difficultyColor: Record<Recipe["difficulty"], string> = {
-  facile: "bg-green-100 text-green-800",
-  moyen: "bg-yellow-100 text-yellow-800",
-  difficile: "bg-red-100 text-red-800",
-};
-
-const categoryColor: Record<Recipe["category"], string> = {
-  entrée: "bg-accent-100 text-accent-600",
-  plat: "bg-brand-100 text-brand-700",
-  dessert: "bg-accent-100 text-accent-600",
-  snack: "bg-brand-100 text-brand-700",
 };
 
 export default function RecipeCard({ recipe }: Props) {
@@ -40,24 +28,21 @@ export default function RecipeCard({ recipe }: Props) {
       <div className="flex flex-1 flex-col gap-2.5 p-4 md:gap-3 md:p-5">
         <div className="flex flex-wrap gap-2">
           <span
-            className={`rounded-[--radius-badge] px-2.5 py-0.5 text-xs font-medium ${categoryColor[recipe.category]}`}
+            className={`rounded-[--radius-badge] px-2.5 py-0.5 text-xs font-medium ${categoryBadgeClass[recipe.category]}`}
           >
             {recipe.category}
           </span>
           <span
-            className={`rounded-[--radius-badge] px-2.5 py-0.5 text-xs font-medium ${difficultyColor[recipe.difficulty]}`}
+            className={`rounded-[--radius-badge] px-2.5 py-0.5 text-xs font-medium ${difficultyBadgeClass[recipe.difficulty]}`}
           >
             {recipe.difficulty}
           </span>
         </div>
 
         <div>
-          <h2 className="font-display text-base font-semibold text-neutral-900 transition-colors group-hover:text-brand-600 md:text-lg">
+          <h2 className="font-display text-2xl font-semibold text-neutral-900 transition-colors group-hover:text-brand-600 md:text-xl">
             {recipe.title}
           </h2>
-          <p className="mt-1 line-clamp-2 text-sm text-neutral-500 md:line-clamp-3">
-            {recipe.description}
-          </p>
         </div>
 
         <div className="mt-auto flex items-center gap-4 text-sm text-neutral-500">

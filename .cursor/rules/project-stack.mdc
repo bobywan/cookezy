@@ -13,7 +13,7 @@ alwaysApply: true
 
 ## Règles absolues
 
-- Toujours utiliser des **Server Components** par défaut ; n'ajouter `"use client"` que si vraiment nécessaire
+- Toujours utiliser des **Server Components** par défaut ; n'ajouter `"use client"` que si vraiment nécessaire (ex. state, événements). Pour une recherche ou un filtre local sur des données déjà chargées, préférer un **petit composant client isolé** plutôt que de convertir toute la page en client
 - Imports : utiliser l'alias `@/` pour les chemins internes
 - Ne jamais utiliser `var` ; préférer `const`, sinon `let`
 - Les types s'importent avec `import type`

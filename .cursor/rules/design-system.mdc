@@ -81,7 +81,7 @@ alwaysApply: true
 | Token | Valeur | Classe Tailwind | Usage |
 |---|---|---|---|
 | `--radius-card` | `1rem` | `rounded-[--radius-card]` | Cartes, images hero, listes ingrédients |
-| `--radius-badge` | `9999px` | `rounded-[--radius-badge]` ou `rounded-full` | Badges, boutons circulaires |
+| `--radius-badge` | `9999px` | `rounded-[--radius-badge]` ou `rounded-full` | Badges, boutons circulaires ; sur un **carré** (`h` = `w`), `rounded-[50%]` est équivalent et parfois préféré (rayon proportionnel, pas de « gros px ») |
 | `--shadow-card` | `0 1px 4px 0 rgb(0 0 0 / .06)` | `shadow-[--shadow-card]` | Cartes au repos |
 
 ---
@@ -107,3 +107,21 @@ alwaysApply: true
 - Fond de page → `bg-brand-50`
 - Header → `bg-white border-b border-brand-100`
 - Titre logo → `font-display text-brand-700`
+
+### Barre de recherche (liste de recettes)
+- Conteneur du champ : `bg-white border border-neutral-200 rounded-[--radius-card] shadow-[--shadow-card]`, aligné avec la grille (`max-w-5xl` / `px-safe` comme la liste).
+- Champ : `text-neutral-900`, `placeholder:text-neutral-400`, fond transparent sur le conteneur blanc (ou `bg-neutral-50` si le champ est visuellement séparé).
+- Focus : `focus-within:border-brand-400` + `focus-within:ring-2 focus-within:ring-brand-300` sur le conteneur (ou équivalent brand), pas de `amber-*` / `stone-*` bruts.
+- Icône loupe : `text-neutral-400`. Encadrer la zone avec l’élément HTML `<search>` (ou `role="search"`) + label accessible (`sr-only` ou visible).
+
+**Recherche / filtre interactif** : isoler le state dans un petit composant `"use client"` ; la page parente reste un Server Component et passe les données en props (ex. `recipes`).
+
+### Mode cuisson (overlay plein écran)
+- Conteneur : `fixed inset-0 z-50` au-dessus du contenu page ; fond derrière le panneau : `bg-neutral-900/60` (overlay sombre, pas de hex isolé dans le JSX).
+- Panneau : `bg-brand-50`, `px-safe` / `pt-safe` / `pb-safe` sur mobile ; sur desktop option `md:rounded-[--radius-card]`, `md:border-neutral-200`, `md:max-h-[min(90dvh,48rem)]`.
+- Carte d’étape : comme les cartes — `bg-white`, `border-neutral-200`, `rounded-[--radius-card]`, `shadow-[--shadow-card]` ; numéro d’étape `bg-brand-500 text-white`.
+- Actions : boutons `min-h-11`, `touch-manipulation` ; primaire `bg-brand-600` / `hover:bg-brand-700`, secondaire `border-neutral-200 bg-white`.
+- Accessibilité : `role="dialog"`, `aria-modal="true"`, `aria-labelledby` sur le titre ; fermeture clavier `Escape` ; verrouiller le scroll du `document.documentElement` quand l’overlay est ouvert.
+- Rappel ingrédients : bouton « Voir / Masquer les ingrédients » avec `aria-expanded` / `aria-controls` ; liste via le même composant que la page (`IngredientList`) avec le **même ratio** que le sélecteur de portions (state partagé dans un parent client commun, ex. `RecipeScaledSections`).
+- Bouton d’entrée mode pas à pas : **FAB** circulaire sur carré égal : `rounded-[50%]` (équivalent visuel à `rounded-full`, plus explicite que des px élevés), `fixed` bas–droite, `z-30` (sous l’overlay `z-50`), marges `max(1rem, env(safe-area-inset-*))` ; masqué quand le dialog est ouvert ; la page recette réserve du **padding bas** pour ne pas masquer le contenu.
+
