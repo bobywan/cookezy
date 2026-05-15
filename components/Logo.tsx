@@ -28,15 +28,7 @@ export default function Logo({ className }: Props) {
         strokeLinecap="round"
       />
       {/* Plateau */}
-      <rect
-        x="58"
-        y="30"
-        width="44"
-        height="5"
-        rx="1.5"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
+      <rect x="58" y="30" width="44" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
       {/* Texte centré sous la cloche */}
       <text
         x="80"
