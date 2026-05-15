@@ -103,10 +103,16 @@ alwaysApply: true
 - moyen → `bg-yellow-100 text-yellow-800`
 - difficile → `bg-red-100 text-red-800`
 
+### Logo
+- Composant : `components/Logo.tsx` — SVG inline, Server Component, pas de `"use client"`.
+- Couleur via `currentColor` : toujours appliquer `text-brand-700` sur l'élément parent ou directement sur `<Logo className="text-brand-700" />`.
+- Taille via `w-*` (viewBox proportionnel, hauteur auto) : `w-40` mobile / `w-44` desktop sur la home.
+- Icônes PWA/favicon : `public/icon-192.png` et `public/icon-512.png` (PNG, générés depuis le même visuel).
+- Ne jamais recréer le logo en texte brut (`font-display` + string) — toujours utiliser `<Logo />`.
+
 ### Page / section
 - Fond de page → `bg-brand-50`
 - Header → `bg-white border-b border-brand-100`
-- Titre logo → `font-display text-brand-700`
 
 ### Barre de recherche (liste de recettes)
 - Conteneur du champ : `bg-white border border-neutral-200 rounded-[--radius-card] shadow-[--shadow-card]`, aligné avec la grille (`max-w-5xl` / `px-safe` comme la liste).

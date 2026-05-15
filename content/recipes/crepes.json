@@ -1,31 +1,31 @@
 {
   "id": "1",
   "slug": "crepes",
-  "title": "Crêpes",
-  "description": "La recette classique de crêpes bretonnes, légères et dorées. Parfaites pour le dessert ou le goûter.",
+  "title": "Crêpes bretonnes",
+  "description": "Pâte à crêpes bretonnes légères et savoureuses, à garnir au choix (caramel au beurre salé, chocolat, confiture…). Prévoir 30 à 45 minutes de repos pour la pâte.",
   "image": "/images/recettes/crepes.jpg",
   "category": "dessert",
   "difficulty": "facile",
-  "prepTime": 10,
-  "cookTime": 20,
-  "servings": 4,
+  "prepTime": 30,
+  "cookTime": 10,
+  "servings": 12,
   "ingredients": [
-    { "quantity": 250, "unit": "g", "name": "farine" },
-    { "quantity": 3, "unit": "", "name": "œufs" },
+    { "quantity": 250, "unit": "g", "name": "farine de froment" },
+    { "quantity": 50, "unit": "g", "name": "beurre" },
     { "quantity": 500, "unit": "ml", "name": "lait" },
-    { "quantity": 50, "unit": "g", "name": "beurre fondu" },
-    { "quantity": 1, "unit": "pincée", "name": "sel" },
-    { "quantity": 1, "unit": "c. à soupe", "name": "sucre" }
+    { "quantity": 100, "unit": "ml", "name": "eau" },
+    { "quantity": 4, "unit": "", "name": "œufs" },
+    { "quantity": 2, "unit": "c. à soupe", "name": "sucre en poudre" },
+    { "quantity": 1, "unit": "pincée", "name": "sel" }
   ],
   "steps": [
-    "Dans un grand bol, mélanger la farine et le sel, puis creuser un puits au centre.",
-    "Casser les œufs dans le puits et fouetter en incorporant progressivement la farine.",
-    "Ajouter le lait petit à petit tout en fouettant pour obtenir une pâte lisse et sans grumeaux.",
-    "Incorporer le beurre fondu et le sucre, puis laisser reposer 30 minutes.",
-    "Faire chauffer une poêle légèrement huilée à feu moyen.",
-    "Verser une louche de pâte et incliner la poêle pour répartir uniformément.",
-    "Cuire 1 à 2 minutes jusqu'à ce que les bords se décollent, puis retourner et cuire encore 1 minute.",
+    "Dans un saladier, mélanger la farine, le sucre et le sel.",
+    "Verser le lait puis l'eau progressivement en fouettant avec un fouet.",
+    "Ajouter le beurre fondu et les œufs pour terminer la pâte.",
+    "Laisser reposer 30 à 45 minutes au frais.",
+    "Graisser une poêle à crêpes avec une noisette de beurre, puis verser une louche de pâte.",
+    "Cuire environ 2 minutes par face et retourner avec une spatule.",
     "Répéter jusqu'à épuisement de la pâte."
   ],
-  "tags": ["végétarien", "rapide", "classique"]
+  "tags": ["végétarien", "breton", "classique"]
 }
