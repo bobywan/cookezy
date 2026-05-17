@@ -5,9 +5,10 @@ import type { Recipe } from "@/lib/types";
 
 type Props = {
   recipe: Recipe;
+  priority?: boolean;
 };
 
-export default function RecipeCard({ recipe }: Props) {
+export default function RecipeCard({ recipe, priority = false }: Props) {
   const totalTime = recipe.prepTime + recipe.cookTime;
 
   return (
@@ -20,6 +21,7 @@ export default function RecipeCard({ recipe }: Props) {
           src={recipe.image}
           alt={recipe.title}
           fill
+          priority={priority}
           className="object-cover transition-transform duration-300 group-hover:scale-105"
           sizes="(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 33vw"
         />
