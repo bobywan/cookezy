@@ -132,8 +132,8 @@ export default function RecipeSearchExplorer({ recipes }: Props) {
 
       {count > 0 && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-3">
-          {filtered.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} />
+          {filtered.map((recipe, index) => (
+            <RecipeCard key={recipe.id} recipe={recipe} priority={index === 0} />
           ))}
         </div>
       )}

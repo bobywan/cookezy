@@ -1,0 +1,35 @@
+{
+  "id": "4",
+  "slug": "boeuf-bourguignon-sans-vin",
+  "title": "Bœuf bourguignon sans vin",
+  "description": "Un bœuf bourguignon généreux et sans alcool : la viande mijote longuement dans un bouillon de volaille avec carottes, champignons et lardons pour un résultat fondant et savoureux.",
+  "image": "/images/recettes/boeuf-bourguignon-sans-vin.jpg",
+  "category": "plat",
+  "difficulty": "facile",
+  "prepTime": 30,
+  "cookTime": 150,
+  "servings": 4,
+  "ingredients": [
+    { "quantity": 1000, "unit": "g", "name": "sauté de bœuf" },
+    { "quantity": 100, "unit": "g", "name": "lardons" },
+    { "quantity": 100, "unit": "g", "name": "champignons" },
+    { "quantity": 1, "unit": "litre", "name": "bouillon de volaille" },
+    { "quantity": 1, "unit": "c. à c.", "name": "concentré de tomate" },
+    { "quantity": 2, "unit": "", "name": "carottes" },
+    { "quantity": 2, "unit": "", "name": "oignons" },
+    { "quantity": 30, "unit": "g", "name": "farine" },
+    { "quantity": 2, "unit": "", "name": "gousses d'ail" },
+    { "quantity": 4, "unit": "c. à s.", "name": "huile" },
+    { "quantity": 1, "unit": "", "name": "bouquet garni" }
+  ],
+  "steps": [
+    "Peler et couper les carottes et un oignon en gros dés. Détailler le sauté de bœuf en gros morceaux.",
+    "Dans une grande cocotte à fond épais, faire dorer la viande dans l'huile à feu très vif. Ajouter les dés de carotte et d'oignon, et faire revenir le tout sans cesser de mélanger.",
+    "Saupoudrer de farine les morceaux de viande. Ajouter le concentré de tomate, les gousses d'ail et le bouquet garni.",
+    "Verser le bouillon de volaille préparé afin qu'il recouvre entièrement la viande.",
+    "Fermer la cocotte et laisser cuire 1 heure à feu doux pour obtenir une belle sauce onctueuse et une viande fondante.",
+    "Pendant ce temps, émincer le deuxième oignon et faire revenir les lardons, les champignons et l'oignon émincé dans une poêle jusqu'à légère coloration.",
+    "Verser les lardons, champignons et oignon dans la cocotte. Baisser le feu, couvrir et laisser mijoter encore 1 h 30 en mélangeant de temps en temps. Rectifier l'assaisonnement avant de servir."
+  ],
+  "tags": ["bœuf", "mijoté", "sans-alcool", "hiver", "familial", "cocotte"]
+}
