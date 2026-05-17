@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import Logo from "@/components/Logo";
 import RecipeSearchExplorer from "@/components/RecipeSearchExplorer";
 import { recipes } from "@/lib/recipes";
@@ -16,6 +17,12 @@ export default function Home() {
           <Logo className="mx-auto w-40 text-brand-700 md:w-44" />
           <span className="sr-only">Cookezy</span>
         </h1>
+        <Link
+          href="/proposer-une-recette"
+          className="mt-3 inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white px-4 py-1.5 text-sm font-medium text-brand-700 shadow-[--shadow-card] transition-colors hover:bg-brand-100"
+        >
+          <span aria-hidden>+</span> Proposer une recette
+        </Link>
       </header>
 
       <RecipeSearchExplorer recipes={recipes} />
