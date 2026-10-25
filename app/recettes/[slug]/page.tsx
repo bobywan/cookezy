@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { RecipeAdminGate } from "@/components/RecipeAdminGate";
 import { RecipeImage } from "@/components/RecipeImage";
 import RecipeScaledSections from "@/components/RecipeScaledSections";
 import RecipeShareActions from "@/components/RecipeShareActions";
@@ -13,6 +14,7 @@ export const dynamic = "force-dynamic";
 
 type Props = {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ cmoa?: string | string[] }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -26,9 +28,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function RecipePage({ params }: Props) {
+export default async function RecipePage({ params, searchParams }: Props) {
   if (!hasDatabase()) return <RecipesUnavailable />;
   const { slug } = await params;
+  const query = await searchParams;
   const recipe = await getRecipeBySlug(slug);
 
   if (!recipe) notFound();
@@ -61,6 +64,7 @@ export default async function RecipePage({ params }: Props) {
       </header>
 
       <article className="recipe-print-root mx-auto max-w-3xl px-safe pt-5 pb-28 md:pt-10 md:pb-28 xl:max-w-4xl">
+        {query.cmoa !== undefined ? <RecipeAdminGate recipe={recipe} /> : null}
         <div className="relative mb-6 aspect-[4/3] w-full min-h-48 overflow-hidden rounded-[--radius-card] sm:min-h-56 md:mb-8 md:aspect-auto md:h-72 md:min-h-0 lg:h-80">
           <RecipeImage
             src={recipe.image}
