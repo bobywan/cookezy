@@ -52,6 +52,9 @@ export function RequestQueue({ requests }: Props) {
               {request.recipe.title}
             </h2>
             <p className="text-sm text-neutral-600">{request.recipe.description}</p>
+            <p className="break-all text-sm text-neutral-500">
+              {request.recipe.image ? request.recipe.image : "Sans photo"}
+            </p>
             <div>
               <h3 className="text-sm font-medium text-neutral-700">Ingrédients</h3>
               <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-neutral-700">

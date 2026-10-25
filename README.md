@@ -56,7 +56,7 @@ Le guide à donner à une IA externe, et le contrat JSON, sont dans [docs/publie
 Sur Vercel, pour Production et Preview :
 
 - `DATABASE_URL` — URL Neon (préfixe `DATABASE`)
-- `ADMIN_PASSWORD` — le mot de passe de `/demandes`
+- `ADMIN_PASSWORD` — le mot de passe de `/demandes`, au moins 12 caractères
 - `RESEND_API_KEY`, `CONTACT_EMAIL`, `RESEND_FROM_EMAIL` — l’e-mail de demande
 - `RECIPE_API_KEYS` — seulement si l’API de publication directe est utilisée
 

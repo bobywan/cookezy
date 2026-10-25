@@ -1,4 +1,6 @@
+import type { LookupOptions } from "node:dns";
 import { lookup } from "node:dns/promises";
+import { request as httpsRequest } from "node:https";
 import { isIP } from "node:net";
 
 const MAX_BYTES = 1_000_000;
@@ -33,7 +35,9 @@ function isPrivateIp(address: string): boolean {
   return false;
 }
 
-async function assertPublicHttps(raw: string): Promise<URL> {
+type ResolvedAddress = { address: string; family: 4 | 6 };
+
+async function assertPublicHttps(raw: string): Promise<{ url: URL; resolved: ResolvedAddress }> {
   let url: URL;
   try {
     url = new URL(raw);
@@ -43,18 +47,100 @@ async function assertPublicHttps(raw: string): Promise<URL> {
   if (url.protocol !== "https:") throw new ExtractError("Seules les URL https sont acceptées.");
   if (url.username || url.password) throw new ExtractError("Cette URL est refusée.");
   const host = url.hostname.replace(/^\[|\]$/g, "").toLowerCase();
-  if (host === "localhost" || host.endsWith(".local") || host.endsWith(".internal")) {
+  if (
+    !host ||
+    host === "localhost" ||
+    host.endsWith(".local") ||
+    host.endsWith(".internal") ||
+    /^\d+$/.test(host)
+  ) {
     throw new ExtractError("Cette adresse n'est pas accessible.");
   }
   if (isIP(host)) {
     if (isPrivateIp(host)) throw new ExtractError("Cette adresse n'est pas accessible.");
-    return url;
+    return { url, resolved: { address: host, family: host.includes(":") ? 6 : 4 } };
   }
   const addresses = await lookup(host, { all: true, verbatim: true });
-  if (addresses.length === 0 || addresses.some((item) => isPrivateIp(item.address))) {
+  const chosen = addresses[0];
+  if (!chosen || addresses.some((item) => isPrivateIp(item.address))) {
     throw new ExtractError("Cette adresse n'est pas accessible.");
   }
-  return url;
+  return {
+    url,
+    resolved: { address: chosen.address, family: chosen.family === 6 ? 6 : 4 },
+  };
+}
+
+type PinnedResponse = { status: number; location: string; body: Buffer };
+
+function readPinned(url: URL, resolved: ResolvedAddress): Promise<PinnedResponse> {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const fail = (error: Error) => {
+      if (settled) return;
+      settled = true;
+      reject(error);
+    };
+    const succeed = (value: PinnedResponse) => {
+      if (settled) return;
+      settled = true;
+      resolve(value);
+    };
+    const req = httpsRequest(
+      url,
+      {
+        method: "GET",
+        headers: { Accept: "text/html,text/plain", "User-Agent": "Cookezy" },
+        timeout: TIMEOUT_MS,
+        lookup: (_hostname: string, options: LookupOptions, callback) => {
+          if (options.all) {
+            callback(null, [{ address: resolved.address, family: resolved.family }]);
+            return;
+          }
+          callback(null, resolved.address, resolved.family);
+        },
+      },
+      (response) => {
+        const status = response.statusCode ?? 0;
+        const locationHeader = response.headers.location;
+        const location = Array.isArray(locationHeader)
+          ? (locationHeader[0] ?? "")
+          : (locationHeader ?? "");
+        if (status >= 300 && status < 400) {
+          response.resume();
+          succeed({ status, location, body: Buffer.alloc(0) });
+          return;
+        }
+        const declared = Number(response.headers["content-length"] ?? 0);
+        if (declared > MAX_BYTES) {
+          response.destroy();
+          fail(new ExtractError("La page est trop volumineuse."));
+          return;
+        }
+        const chunks: Buffer[] = [];
+        let size = 0;
+        response.on("data", (chunk: Buffer) => {
+          size += chunk.length;
+          if (size > MAX_BYTES) {
+            response.destroy();
+            fail(new ExtractError("La page est trop volumineuse."));
+            return;
+          }
+          chunks.push(chunk);
+        });
+        response.on("end", () => {
+          succeed({ status, location, body: Buffer.concat(chunks) });
+        });
+        response.on("error", () => fail(new ExtractError("La page n'a pas pu être lue.")));
+      },
+    );
+    req.on("timeout", () => {
+      req.destroy();
+      fail(new ExtractError("La page n'a pas pu être lue."));
+    });
+    req.on("error", () => fail(new ExtractError("La page n'a pas pu être lue.")));
+    req.end();
+  });
 }
 
 function htmlToText(html: string): string {
@@ -76,23 +162,17 @@ function htmlToText(html: string): string {
 export async function extractPageText(rawUrl: string): Promise<string> {
   let current = await assertPublicHttps(rawUrl);
   for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
-    const response = await fetch(current, {
-      redirect: "manual",
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-      headers: { Accept: "text/html,text/plain", "User-Agent": "Cookezy" },
-    });
+    const response = await readPinned(current.url, current.resolved);
     if (response.status >= 300 && response.status < 400) {
-      const location = response.headers.get("location");
-      if (!location || hop === MAX_REDIRECTS) throw new ExtractError("Redirection refusée.");
-      current = await assertPublicHttps(new URL(location, current).href);
+      if (!response.location || hop === MAX_REDIRECTS)
+        throw new ExtractError("Redirection refusée.");
+      current = await assertPublicHttps(new URL(response.location, current.url).href);
       continue;
     }
-    if (!response.ok) throw new ExtractError("La page n'a pas pu être lue.");
-    const length = Number(response.headers.get("content-length") ?? 0);
-    if (length > MAX_BYTES) throw new ExtractError("La page est trop volumineuse.");
-    const buffer = await response.arrayBuffer();
-    if (buffer.byteLength > MAX_BYTES) throw new ExtractError("La page est trop volumineuse.");
-    const text = htmlToText(new TextDecoder().decode(buffer));
+    if (response.status < 200 || response.status >= 300) {
+      throw new ExtractError("La page n'a pas pu être lue.");
+    }
+    const text = htmlToText(new TextDecoder().decode(response.body));
     if (!text) throw new ExtractError("La page ne contient pas de texte.");
     return text;
   }

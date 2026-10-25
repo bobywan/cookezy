@@ -8,6 +8,18 @@ type Props = {
   className?: string;
 };
 
+function RemoteImage({ src, alt, className }: Pick<Props, "src" | "alt" | "className">) {
+  return (
+    // biome-ignore lint/performance/noImgElement: le navigateur charge l'image, pas le serveur
+    <img
+      src={src}
+      alt={alt}
+      referrerPolicy="no-referrer"
+      className={`absolute inset-0 h-full w-full ${className ?? "object-cover"}`}
+    />
+  );
+}
+
 export function RecipeImage({ src, alt, sizes, priority = false, className }: Props) {
   if (!src) {
     return (
@@ -15,6 +27,10 @@ export function RecipeImage({ src, alt, sizes, priority = false, className }: Pr
         <p className="text-center font-display text-lg text-brand-700">{alt}</p>
       </div>
     );
+  }
+
+  if (src.startsWith("https://")) {
+    return <RemoteImage src={src} alt={alt} className={className} />;
   }
 
   return (

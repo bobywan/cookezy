@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { Resend } from "resend";
-import { isAdmin, startAdminSession } from "@/lib/admin-session";
+import { adminPasswordMessage, isAdmin, startAdminSession } from "@/lib/admin-session";
 import { hasDatabase } from "@/lib/db";
 import {
   approveRecipeRequest,
@@ -19,7 +19,31 @@ export type DemandeState = {
 
 const RATE_LIMIT_MAX = 3;
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+const ADMIN_ATTEMPT_MAX = 5;
+const ADMIN_ATTEMPT_WINDOW_MS = 15 * 60 * 1000;
 const ipMap = new Map<string, { count: number; resetAt: number }>();
+const adminFailures = new Map<string, { count: number; resetAt: number }>();
+
+async function clientIp(): Promise<string> {
+  const headersList = await headers();
+  return headersList.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+}
+
+function adminLocked(ip: string): boolean {
+  const entry = adminFailures.get(ip);
+  if (!entry || Date.now() > entry.resetAt) return false;
+  return entry.count >= ADMIN_ATTEMPT_MAX;
+}
+
+function noteAdminFailure(ip: string) {
+  const now = Date.now();
+  const entry = adminFailures.get(ip);
+  if (!entry || now > entry.resetAt) {
+    adminFailures.set(ip, { count: 1, resetAt: now + ADMIN_ATTEMPT_WINDOW_MS });
+    return;
+  }
+  entry.count += 1;
+}
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
@@ -51,8 +75,7 @@ export async function envoyerDemande(input: unknown, trap: string): Promise<Dema
   if (trap.trim()) {
     return { status: "success", message: "Merci ! Ta demande a bien été envoyée." };
   }
-  const headersList = await headers();
-  const ip = headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const ip = await clientIp();
   if (!checkRateLimit(ip)) {
     return { status: "error", message: "Trop de tentatives. Réessaie dans une heure." };
   }
@@ -81,11 +104,18 @@ export async function envoyerDemande(input: unknown, trap: string): Promise<Dema
 }
 
 export async function connecterAdmin(password: string): Promise<DemandeState> {
-  if (!process.env.ADMIN_PASSWORD) {
-    return { status: "error", message: "Le mot de passe administrateur n'est pas configuré." };
+  const problem = adminPasswordMessage();
+  if (problem) return { status: "error", message: problem };
+  const ip = await clientIp();
+  if (adminLocked(ip)) {
+    return { status: "error", message: "Trop de tentatives. Réessaie dans un quart d'heure." };
   }
   const ok = await startAdminSession(password);
-  if (!ok) return { status: "error", message: "Mot de passe incorrect." };
+  if (!ok) {
+    noteAdminFailure(ip);
+    return { status: "error", message: "Mot de passe incorrect." };
+  }
+  adminFailures.delete(ip);
   return { status: "success", message: "" };
 }
 

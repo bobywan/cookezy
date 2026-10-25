@@ -56,7 +56,7 @@ Authorization: Bearer LA_CLE
 Content-Type: application/json
 ```
 
-Le corps est le même JSON. `slug` et `id` restent optionnels : sans `slug`, il est déduit du titre ; sans `id`, il vaut le slug. Sans `image`, ou si un chemin local n’existe pas, la recette s’affiche sans photo. Une image acceptée est une URL `https`, ou un fichier déjà présent dans `/images/recettes/`.
+Le corps est le même JSON. `slug` et `id` restent optionnels : sans `slug`, il est déduit du titre ; sans `id`, il vaut le slug. Sans `image`, ou si un chemin local n’existe pas, la recette s’affiche sans photo. Une image acceptée est une URL `https` publique, ou un fichier déjà présent dans `/images/recettes/`. Une adresse locale est refusée. Le serveur ne télécharge pas cette image : le navigateur l'affiche.
 
 Succès `201` :
 
