@@ -41,8 +41,9 @@ export default function MaPage() {
 
 ## Ajouter une recette
 
-- Données : créer `content/recipes/<slug>.json` conforme au type `Recipe` (`lib/types.ts`), puis importer ce fichier dans `lib/recipes.ts` et l’ajouter au tableau exporté `recipes` (pas de CMS : contenu statique versionné).
-- Suivre la checklist et le modèle JSON décrits dans la règle projet `.cursor/rules/recettes-donnees.mdc` (champs obligatoires, `slug` unique en kebab-case, `steps` ordonnés, images sous `public/images/recettes/` en général).
+- Le catalogue vivant est Neon. Une publication passe par `POST /api/recettes` (voir `docs/publier-une-recette.md`), pas par un import dans `lib/recipes.ts`.
+- Les JSON de `content/recipes/` sont le jeu de départ, chargé par `npm run db:seed`.
+- Suivre la checklist et le modèle JSON décrits dans `.cursor/rules/recettes-donnees.mdc` (champs obligatoires, `slug` unique en kebab-case, `steps` ordonnés).
 
 ## Ajouter une Route Handler (API)
 

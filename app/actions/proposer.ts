@@ -161,7 +161,7 @@ export async function proposerRecette(
       `Tags : ${tags.map((t) => `#${t}`).join(" ") || "(aucun)"}`,
       "",
       "─".repeat(60),
-      "JSON prêt à copier dans content/recipes/ :",
+      "Aperçu JSON. La publication sur le site passe par POST /api/recettes :",
       jsonReady,
     ].join("\n");
 
