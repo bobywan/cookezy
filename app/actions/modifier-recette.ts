@@ -10,7 +10,12 @@ import {
 } from "@/lib/admin-session";
 import { clientIpFrom } from "@/lib/client-ip";
 import { clearRateLimit, noteRateLimit, rateLimitCount } from "@/lib/rate-limit";
-import { releaseRecipeImage, storedImageReady } from "@/lib/recipe-images";
+import {
+  ImageImportError,
+  releaseRecipeImage,
+  storedImageReady,
+  storeRecipeImage,
+} from "@/lib/recipe-images";
 import { parseRecipe } from "@/lib/recipe-schema";
 import { getRecipeBySlug, updateRecipe } from "@/lib/recipes";
 
@@ -42,6 +47,36 @@ async function releaseReplacedImage(previous: string, next: string) {
   if (!previous || previous === next) return;
   try {
     await releaseRecipeImage(previous);
+  } catch (error) {
+    console.error("releaseRecipeImage failed", error);
+  }
+}
+
+export async function envoyerImageRecette(
+  formData: FormData,
+): Promise<{ ok: true; path: string } | { ok: false; message: string }> {
+  if (!(await isAdmin())) return { ok: false, message: "Accès refusé." };
+  const file = formData.get("image");
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false, message: "Choisis une image." };
+  }
+  if (file.size > 5 * 1024 * 1024) return { ok: false, message: "L'image dépasse 5 Mo." };
+  try {
+    const path = await storeRecipeImage(Buffer.from(await file.arrayBuffer()));
+    const previous = formData.get("previous");
+    if (typeof previous === "string" && previous !== path) await releaseRecipeImage(previous);
+    return { ok: true, path };
+  } catch (error) {
+    if (error instanceof ImageImportError) return { ok: false, message: error.message };
+    console.error("envoyerImageRecette failed", error);
+    return { ok: false, message: "L'image n'a pas pu être enregistrée." };
+  }
+}
+
+export async function oublierImageRecette(path: string): Promise<void> {
+  if (!(await isAdmin())) return;
+  try {
+    await releaseRecipeImage(path);
   } catch (error) {
     console.error("releaseRecipeImage failed", error);
   }

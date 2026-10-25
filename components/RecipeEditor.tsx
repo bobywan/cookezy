@@ -1,8 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { modifierRecette } from "@/app/actions/modifier-recette";
+import { useRef, useState } from "react";
+import {
+  envoyerImageRecette,
+  modifierRecette,
+  oublierImageRecette,
+} from "@/app/actions/modifier-recette";
 import { RecipeImage } from "@/components/RecipeImage";
 import type { Recipe } from "@/lib/types";
 
@@ -41,6 +45,26 @@ export function RecipeEditor({ recipe }: { recipe: Recipe }) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState(false);
   const [pending, setPending] = useState(false);
+  const [imageMessage, setImageMessage] = useState("");
+  const [imageBusy, setImageBusy] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const chooseImage = async (file: File | undefined) => {
+    if (!file) return;
+    setImageBusy(true);
+    setImageMessage("");
+    const body = new FormData();
+    body.set("image", file);
+    if (image !== recipe.image) body.set("previous", image);
+    const result = await envoyerImageRecette(body);
+    setImageBusy(false);
+    if (fileRef.current) fileRef.current.value = "";
+    if (!result.ok) {
+      setImageMessage(result.message);
+      return;
+    }
+    setImage(result.path);
+  };
 
   const save = async () => {
     setPending(true);
@@ -176,23 +200,62 @@ export function RecipeEditor({ recipe }: { recipe: Recipe }) {
             />
           </Field>
         </div>
-        <Field label="Image">
+        <div className="space-y-3">
+          <p className="text-sm font-medium text-neutral-700">Photo</p>
+          {image.trim() ? (
+            <div className="relative aspect-[4/3] overflow-hidden rounded-[--radius-card]">
+              <RecipeImage
+                src={image.trim()}
+                alt={title || "Photo"}
+                sizes="(max-width: 768px) 100vw, 640px"
+              />
+            </div>
+          ) : (
+            <p className="text-sm text-neutral-500">Aucune photo.</p>
+          )}
           <input
-            value={image}
-            onChange={(event) => setImage(event.target.value)}
-            placeholder="/images/recettes/… ou https://"
-            className={inputCls}
+            ref={fileRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="sr-only"
+            onChange={(event) => {
+              void chooseImage(event.target.files?.[0]);
+            }}
           />
-        </Field>
-        {image.trim() && (
-          <div className="relative aspect-[4/3] overflow-hidden rounded-[--radius-card]">
-            <RecipeImage
-              src={image.trim()}
-              alt={title || "Photo"}
-              sizes="(max-width: 768px) 100vw, 640px"
-            />
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              disabled={imageBusy || pending}
+              className="min-h-11 rounded-[--radius-card] bg-brand-600 px-4 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-60"
+            >
+              {imageBusy
+                ? "Envoi de la photo…"
+                : image.trim()
+                  ? "Changer la photo"
+                  : "Ajouter une photo"}
+            </button>
+            {image.trim() && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (image !== recipe.image) void oublierImageRecette(image);
+                  setImage("");
+                  setImageMessage("");
+                }}
+                disabled={imageBusy || pending}
+                className="min-h-11 rounded-[--radius-card] border border-neutral-200 bg-white px-4 text-sm font-medium text-neutral-700 disabled:opacity-60"
+              >
+                Retirer la photo
+              </button>
+            )}
           </div>
-        )}
+          {imageMessage && (
+            <p role="alert" className="text-sm text-red-700">
+              {imageMessage}
+            </p>
+          )}
+        </div>
         <Field label="Adresse d'origine">
           <input
             type="url"
@@ -316,7 +379,7 @@ export function RecipeEditor({ recipe }: { recipe: Recipe }) {
       <div className="flex flex-wrap gap-3">
         <button
           type="submit"
-          disabled={pending}
+          disabled={pending || imageBusy}
           className="min-h-11 rounded-[--radius-card] bg-brand-600 px-4 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-60"
         >
           {pending ? "Enregistrement…" : "Enregistrer"}

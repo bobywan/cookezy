@@ -105,6 +105,30 @@ export async function importRememberedImage(id: string): Promise<string> {
   throw new ImageImportError("Cette image n'est plus disponible.");
 }
 
+export async function storeRecipeImage(source: Buffer): Promise<string> {
+  if (!hasDatabase()) throw new ImageImportError("Les images sont indisponibles pour le moment.");
+  if (source.length === 0) throw new ImageImportError("Choisis une image.");
+  if (source.length > SOURCE_MAX_BYTES) throw new ImageImportError("L'image dépasse 5 Mo.");
+  await ensureTable();
+
+  let optimized: Buffer;
+  try {
+    optimized = await optimizeRecipeImage(source);
+  } catch (error) {
+    if (error instanceof ImageOptimizeError) throw new ImageImportError(error.message);
+    console.error("optimizeRecipeImage failed", error);
+    throw new ImageImportError("L'image n'a pas pu être préparée.");
+  }
+
+  const sql = getSql();
+  const id = crypto.randomUUID();
+  await sql`
+    INSERT INTO recipe_images (id, bytes)
+    VALUES (${id}, decode(${optimized.toString("base64")}, 'base64'))
+  `;
+  return storedImagePath(id);
+}
+
 export async function storedImageReady(path: string): Promise<boolean> {
   const id = imageIdFromPath(path);
   if (!id) return true;
