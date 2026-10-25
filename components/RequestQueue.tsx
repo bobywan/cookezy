@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ajouterDemande, supprimerDemande } from "@/app/actions/demandes";
+import { RecipeImage } from "@/components/RecipeImage";
 import { categoryBadgeClass } from "@/lib/recipe-badges";
 import type { RecipeRequest } from "@/lib/recipe-requests";
 
@@ -52,9 +53,17 @@ export function RequestQueue({ requests }: Props) {
               {request.recipe.title}
             </h2>
             <p className="text-sm text-neutral-600">{request.recipe.description}</p>
-            <p className="break-all text-sm text-neutral-500">
-              {request.recipe.image ? request.recipe.image : "Sans photo"}
-            </p>
+            {request.recipe.image ? (
+              <div className="relative aspect-[4/3] overflow-hidden rounded-[--radius-card]">
+                <RecipeImage
+                  src={request.recipe.image}
+                  alt={request.recipe.title}
+                  sizes="(max-width: 768px) 100vw, 640px"
+                />
+              </div>
+            ) : (
+              <p className="text-sm text-neutral-500">Sans photo</p>
+            )}
             <div>
               <h3 className="text-sm font-medium text-neutral-700">Ingrédients</h3>
               <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-neutral-700">

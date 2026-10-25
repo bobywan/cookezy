@@ -41,11 +41,13 @@ Le site est sur [http://localhost:3000](http://localhost:3000).
 
 ## Ajouter une recette
 
-1. `/proposer-une-recette` — la personne colle une URL, décrit la recette, ou remplit le formulaire. « Envoyer la demande » enregistre la recette dans `recipe_requests`. Elle n’apparaît pas sur l’accueil.
-2. Un e-mail part vers `CONTACT_EMAIL` avec le titre. Si l’e-mail échoue, la demande reste enregistrée.
-3. `/demandes` — mot de passe `ADMIN_PASSWORD`. **Ajouter** copie la recette dans `recipes` et retire la demande. **Supprimer** efface la demande. Si le slug existe déjà, la demande reste dans la liste.
+1. `/proposer-une-recette` — la personne colle une URL, décrit la recette, ou remplit le formulaire. L’URL est enregistrée avec la recette. Une adresse déjà connue rouvre la fiche : une demande en attente est mise à jour, une recette déjà en ligne aussi, après le mot de passe de `/demandes`. Une adresse nouvelle crée une demande dans `recipe_requests` et n’apparaît pas sur l’accueil. Si la page contient une image, la personne peut l’adopter : Cookezy la réduit (1200 px, WebP, 150 Ko maximum) et la garde dans Neon.
+2. Un e-mail part vers `CONTACT_EMAIL` à la première demande. Si l’e-mail échoue, la demande reste enregistrée. Une mise à jour n’envoie pas un nouvel e-mail.
+3. `/demandes` — mot de passe `ADMIN_PASSWORD`. **Ajouter** copie la recette dans `recipes` et retire la demande. **Supprimer** efface la demande et l’image si aucune recette ne l’utilise. Si le slug existe déjà, la demande reste dans la liste.
 
-La clé Gemini, Groq ou OpenRouter est saisie sur la page et reste dans le navigateur (`localStorage`). Cookezy ne la stocke pas. Sans clé, le formulaire manuel et l’envoi de la demande fonctionnent quand même.
+Les clés Gemini, Groq et OpenRouter sont saisies sur la page et restent dans le navigateur (`localStorage`), une par service. Le bloc se replie quand le service actif a une clé. Cookezy ne stocke pas ces clés. Sans clé, le formulaire manuel et l’envoi de la demande fonctionnent quand même.
+
+Quitter la page alors qu’une recette n’est pas envoyée demande confirmation. Les envois publics sont limités dans Neon : 3 demandes et 10 lectures d’URL par heure et par adresse, 5 essais de mot de passe admin par quart d’heure, 10 échecs de clé sur `POST /api/recettes` par heure.
 
 Le guide à donner à une IA externe, et le contrat JSON, sont dans [docs/publier-une-recette.md](docs/publier-une-recette.md).
 
@@ -82,7 +84,8 @@ app/proposer-une-recette/        formulaire de demande
 app/demandes/                    file protégée par mot de passe
 app/api/recettes/                publication directe (clé serveur)
 app/api/extraire-url/            lecture d’une page pour l’aide IA
+app/images/recettes/[file]/      image réduite servie depuis Neon
 content/recipes/                 jeu de départ, pas le catalogue vivant
-db/schema.sql                    tables recipes et recipe_requests
+db/schema.sql                    tables recipes, recipe_requests, recipe_images, rate_limits
 lib/ai/                          appel IA depuis le navigateur
 ```

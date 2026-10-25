@@ -3,7 +3,7 @@ import { type FieldError, type ParseResult, parseRecipeFields } from "@/lib/reci
 
 const SYSTEM = `Tu prépares une recette pour Cookezy. Réponds uniquement avec un objet JSON, sans texte autour.
 Champs : title, description, category (entrée, plat, dessert ou snack), difficulty (facile, moyen ou difficile), prepTime et cookTime (entiers, minutes), servings (entier >= 1), ingredients (liste de { quantity: nombre, unit: chaîne, name: chaîne }), steps (liste de textes, une action par étape), tags (liste de textes en minuscules, sans #).
-N'invente pas d'image. Omets image, id et slug.`;
+N'invente pas d'image. Omets image, id, slug et sourceUrl.`;
 
 function extractJson(text: string): unknown {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);

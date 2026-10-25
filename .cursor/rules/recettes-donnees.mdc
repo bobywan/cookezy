@@ -12,7 +12,7 @@ globs:
 
 Le schéma TypeScript est la source de vérité : types `Recipe` et `Ingredient` dans [`lib/types.ts`](lib/types.ts). Le catalogue vivant est la table Neon `recipes` (`data` jsonb). [`lib/recipes.ts`](lib/recipes.ts) lit cette table à chaque requête. Les fichiers [`content/recipes/`](content/recipes/) ne servent qu’au chargement initial (`npm run db:seed`).
 
-Le formulaire `/proposer-une-recette` enregistre une demande dans `recipe_requests`. Il ne publie pas. L’ajout au catalogue se fait sur `/demandes` (`ADMIN_PASSWORD`) : **Ajouter** appelle `insertRecipe` puis retire la demande, **Supprimer** efface la demande. Un slug déjà pris laisse la demande en place. `POST /api/recettes` (clé `RECIPE_API_KEYS`) reste un accès direct, hors formulaire. Le guide à donner à une IA est [`docs/publier-une-recette.md`](docs/publier-une-recette.md).
+Le formulaire `/proposer-une-recette` enregistre une demande dans `recipe_requests`, ou met à jour la demande qui a déjà cette `sourceUrl`. Une recette déjà en ligne avec la même adresse est mise à jour directement si la session admin est ouverte ; son slug ne change pas. Sans cette session, l’envoi est refusé. L’ajout au catalogue d’une nouvelle demande se fait sur `/demandes` (`ADMIN_PASSWORD`) : **Ajouter** appelle `insertRecipe` puis retire la demande, **Supprimer** efface la demande. Un slug déjà pris laisse la demande en place. `POST /api/recettes` (clé `RECIPE_API_KEYS`) reste un accès direct, hors formulaire. Le guide à donner à une IA est [`docs/publier-une-recette.md`](docs/publier-une-recette.md).
 
 ## Checklist pour une recette publiée
 
@@ -20,7 +20,8 @@ Le formulaire `/proposer-une-recette` enregistre une demande dans `recipe_reques
 - **`slug`** : unique, **kebab-case** ; utilisé dans l’URL `/recettes/[slug]`. Optionnel à l’API : déduit du titre.
 - **`title`** : titre affiché (typo française cohérente avec le site).
 - **`description`** : court paragraphe pour cartes et meta.
-- **`image`** : vide ou absente (bloc sans photo), URL `https`, ou chemin `/images/recettes/...` dont le fichier existe dans `public/`. Un chemin local inconnu est enregistré vide.
+- **`image`** : vide ou absente (bloc sans photo), URL `https`, fichier déjà présent dans `public/images/recettes/`, ou chemin `/images/recettes/<uuid>.webp` dont les octets sont dans Neon (`recipe_images`). Un autre chemin local inconnu est enregistré vide. L’API directe ne télécharge pas une URL.
+- **`sourceUrl`** : optionnelle. URL `https` publique de la page d’origine, normalisée (hôte en minuscules, ancre retirée, slash final retiré), ou chaîne vide. Elle sert à retrouver la fiche. Les recettes déjà enregistrées sans cette adresse ne peuvent pas être retrouvées. L’API directe ne télécharge rien depuis cette adresse. Une adresse déjà connue met à jour la demande, ou la recette en ligne si la session admin est ouverte. Le `slug` d’une recette en ligne ne change pas.
 - **`category`** : exactement une de `entrée` | `plat` | `dessert` | `snack`.
 - **`difficulty`** : `facile` | `moyen` | `difficile`.
 - **`prepTime` / `cookTime`** : minutes, nombres entiers (0 si aucune).

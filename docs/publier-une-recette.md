@@ -2,7 +2,7 @@
 
 Tu aides quelqu’un à remplir une recette. Tu ne la publies pas. Tu renvoies un seul objet JSON, sans texte autour. La personne le corrige sur [https://cookezy.vercel.app/proposer-une-recette](https://cookezy.vercel.app/proposer-une-recette), puis envoie la demande. Quelqu’un d’autre l’ajoute au site, ou la refuse.
 
-N’invente pas d’image, de clé, ni d’identifiant. Omets `image`, `id` et `slug`.
+N’invente pas d’image, de clé, ni d’identifiant. Omets `image`, `id`, `slug` et `sourceUrl`.
 
 ## Champs
 
@@ -56,7 +56,7 @@ Authorization: Bearer LA_CLE
 Content-Type: application/json
 ```
 
-Le corps est le même JSON. `slug` et `id` restent optionnels : sans `slug`, il est déduit du titre ; sans `id`, il vaut le slug. Sans `image`, ou si un chemin local n’existe pas, la recette s’affiche sans photo. Une image acceptée est une URL `https` publique, ou un fichier déjà présent dans `/images/recettes/`. Une adresse locale est refusée. Le serveur ne télécharge pas cette image : le navigateur l'affiche.
+Le corps est le même JSON. `slug` et `id` restent optionnels : sans `slug`, il est déduit du titre ; sans `id`, il vaut le slug. `sourceUrl` est optionnelle : une URL `https` publique, ou absente. Cette API ne s’en sert pas pour télécharger la page ni l’image. Sans `image`, ou si un chemin local n’existe pas, la recette s’affiche sans photo. Une image acceptée est une URL `https` publique, un fichier déjà présent dans `/images/recettes/`, ou un chemin `/images/recettes/<uuid>.webp` déjà enregistré par le formulaire (WebP, 1200 px, 150 Ko maximum). Une adresse locale est refusée. Cette API ne télécharge pas l’image : le formulaire, lui, peut copier l’image trouvée sur une page, après accord de la personne. Une adresse déjà enregistrée par le formulaire met à jour la fiche existante.
 
 Succès `201` :
 

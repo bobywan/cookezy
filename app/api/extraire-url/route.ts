@@ -1,25 +1,15 @@
 import { NextResponse } from "next/server";
-import { ExtractError, extractPageText } from "@/lib/extract-url";
+import { clientIpFrom } from "@/lib/client-ip";
+import { ExtractError, extractPage } from "@/lib/extract-url";
+import { allowRateLimit } from "@/lib/rate-limit";
+import { rememberImageSource } from "@/lib/recipe-images";
 
 const RATE_LIMIT_MAX = 10;
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
-const ipMap = new Map<string, { count: number; resetAt: number }>();
-
-function allowed(ip: string): boolean {
-  const now = Date.now();
-  const entry = ipMap.get(ip);
-  if (!entry || now > entry.resetAt) {
-    ipMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return true;
-  }
-  if (entry.count >= RATE_LIMIT_MAX) return false;
-  entry.count += 1;
-  return true;
-}
 
 export async function POST(request: Request) {
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  if (!allowed(ip)) {
+  const ip = clientIpFrom(request.headers);
+  if (!(await allowRateLimit(`extraire:${ip}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS))) {
     return NextResponse.json(
       { ok: false, message: "Trop de lectures. Réessaie dans une heure." },
       { status: 429 },
@@ -41,8 +31,20 @@ export async function POST(request: Request) {
   }
 
   try {
-    const text = await extractPageText(url);
-    return NextResponse.json({ ok: true, text });
+    const page = await extractPage(url);
+    let imageId: string | undefined;
+    if (page.imageUrl) {
+      try {
+        imageId = await rememberImageSource(page.imageUrl);
+      } catch (error) {
+        console.error("rememberImageSource failed", error);
+      }
+    }
+    return NextResponse.json({
+      ok: true,
+      text: page.text,
+      ...(imageId && page.imageUrl ? { imageId, imageUrl: page.imageUrl } : {}),
+    });
   } catch (error) {
     const message = error instanceof ExtractError ? error.message : "La page n'a pas pu être lue.";
     return NextResponse.json({ ok: false, message }, { status: 400 });
