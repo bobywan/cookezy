@@ -16,37 +16,87 @@ function extractJson(text: string): unknown {
   return JSON.parse(source.slice(start, end + 1)) as unknown;
 }
 
+const GEMINI_MODELS = ["gemini-3.8-flash", "gemini-2.5-flash"] as const;
+
+function failureMessage(status: number, detail: string): string {
+  const lower = detail.toLowerCase();
+  if (status === 503 || lower.includes("unavailable") || lower.includes("overloaded")) {
+    return "Le service d'IA est saturé pour le moment. Réessaie dans un instant.";
+  }
+  if (status === 429 || lower.includes("quota")) {
+    return "Le quota du service d'IA est atteint. Réessaie plus tard.";
+  }
+  if (lower.includes("api key") || lower.includes("api_key")) {
+    return "Gemini refuse cette clé. Elle doit venir de Google AI Studio et commencer par AIza.";
+  }
+  if (detail) return `Le service d'IA a refusé la demande. ${detail}`;
+  return "Le service d'IA a refusé la demande. Vérifie la clé.";
+}
+
+async function errorDetail(response: Response): Promise<string> {
+  try {
+    const data = (await response.json()) as { error?: { message?: string } };
+    return data.error?.message ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function geminiText(data: {
+  candidates?: { content?: { parts?: { text?: string; thought?: boolean }[] } }[];
+}): string {
+  return (
+    data.candidates?.[0]?.content?.parts
+      ?.filter((part) => !part.thought)
+      .map((part) => part.text ?? "")
+      .join("") ?? ""
+  );
+}
+
+async function completeGemini(apiKey: string, user: string): Promise<string> {
+  let lastStatus = 503;
+  let lastDetail = "";
+  for (const model of GEMINI_MODELS) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: SYSTEM }] },
+            contents: [{ role: "user", parts: [{ text: user }] }],
+            generationConfig: {
+              temperature: 0.4,
+              responseMimeType: "application/json",
+              ...(model === "gemini-3.8-flash" ? { thinkingConfig: { thinkingLevel: "LOW" } } : {}),
+            },
+          }),
+        },
+      );
+      if (response.ok) {
+        const text = geminiText(
+          (await response.json()) as {
+            candidates?: { content?: { parts?: { text?: string; thought?: boolean }[] } }[];
+          },
+        );
+        if (!text) throw new Error("L'IA n'a pas renvoyé de recette.");
+        return text;
+      }
+      lastStatus = response.status;
+      lastDetail = await errorDetail(response);
+      if (lastStatus !== 503 && lastStatus !== 429) {
+        throw new Error(failureMessage(lastStatus, lastDetail));
+      }
+      await new Promise((resolve) => setTimeout(resolve, 800 * (attempt + 1)));
+    }
+  }
+  throw new Error(failureMessage(lastStatus, lastDetail));
+}
+
 async function complete(providerId: AiProviderId, apiKey: string, user: string): Promise<string> {
   const provider = providerById(providerId);
-  if (providerId === "gemini") {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${provider.model}:generateContent`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM }] },
-          contents: [{ role: "user", parts: [{ text: user }] }],
-          generationConfig: {
-            temperature: 0.4,
-            responseMimeType: "application/json",
-            thinkingConfig: { thinkingLevel: "LOW" },
-          },
-        }),
-      },
-    );
-    if (!response.ok) throw new Error("Le service d'IA a refusé la demande. Vérifie la clé.");
-    const data = (await response.json()) as {
-      candidates?: { content?: { parts?: { text?: string; thought?: boolean }[] } }[];
-    };
-    const text =
-      data.candidates?.[0]?.content?.parts
-        ?.filter((part) => !part.thought)
-        .map((part) => part.text ?? "")
-        .join("") ?? "";
-    if (!text) throw new Error("L'IA n'a pas renvoyé de recette.");
-    return text;
-  }
+  if (providerId === "gemini") return completeGemini(apiKey, user);
 
   const response = await fetch(`${baseUrl(providerId)}/chat/completions`, {
     method: "POST",
@@ -70,7 +120,7 @@ async function complete(providerId: AiProviderId, apiKey: string, user: string):
         : {}),
     }),
   });
-  if (!response.ok) throw new Error("Le service d'IA a refusé la demande. Vérifie la clé.");
+  if (!response.ok) throw new Error(failureMessage(response.status, await errorDetail(response)));
   const data = (await response.json()) as { choices?: { message?: { content?: string } }[] };
   const text = data.choices?.[0]?.message?.content ?? "";
   if (!text) throw new Error("L'IA n'a pas renvoyé de recette.");
