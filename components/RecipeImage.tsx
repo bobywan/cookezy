@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { isStoredRecipeImage } from "@/lib/recipe-image-path";
 
 type Props = {
   src: string;
@@ -29,7 +30,7 @@ export function RecipeImage({ src, alt, sizes, priority = false, className }: Pr
     );
   }
 
-  if (src.startsWith("https://")) {
+  if (src.startsWith("https://") || isStoredRecipeImage(src)) {
     return <RemoteImage src={src} alt={alt} className={className} />;
   }
 

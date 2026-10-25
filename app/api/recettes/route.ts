@@ -1,6 +1,9 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
+import { clientIpFrom } from "@/lib/client-ip";
 import { hasDatabase } from "@/lib/db";
+import { noteRateLimit, rateLimitCount } from "@/lib/rate-limit";
+import { storedImageReady } from "@/lib/recipe-images";
 import { type FieldError, parseRecipe } from "@/lib/recipe-schema";
 import { insertRecipe } from "@/lib/recipes";
 
@@ -28,6 +31,9 @@ function authorized(request: Request): boolean {
   });
 }
 
+const AUTH_FAILURE_MAX = 10;
+const AUTH_WINDOW_MS = 60 * 60 * 1000;
+
 function recipeUrl(request: Request, slug: string): string {
   const configured = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
   const base = configured || new URL(request.url).origin;
@@ -35,7 +41,20 @@ function recipeUrl(request: Request, slug: string): string {
 }
 
 export async function POST(request: Request) {
+  const ip = clientIpFrom(request.headers);
+  if ((await rateLimitCount(`recettes-auth:${ip}`)) >= AUTH_FAILURE_MAX) {
+    return json(
+      {
+        ok: false,
+        errors: [
+          { field: "authorization", message: "Trop de tentatives. Réessaie dans une heure." },
+        ],
+      },
+      429,
+    );
+  }
   if (!authorized(request)) {
+    await noteRateLimit(`recettes-auth:${ip}`, AUTH_WINDOW_MS);
     return json({ ok: false, errors: [{ field: "authorization", message: "Clé invalide." }] }, 401);
   }
 
@@ -51,6 +70,15 @@ export async function POST(request: Request) {
 
   const parsed = parseRecipe(body);
   if (!parsed.ok) return json({ ok: false, errors: parsed.errors }, 400);
+  if (parsed.recipe.image && !(await storedImageReady(parsed.recipe.image))) {
+    return json(
+      {
+        ok: false,
+        errors: [{ field: "image", message: "Cette image n'est pas disponible sur le site." }],
+      },
+      400,
+    );
+  }
   if (!hasDatabase()) {
     return json(
       {

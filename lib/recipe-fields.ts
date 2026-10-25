@@ -130,6 +130,44 @@ function resolveImage(
   return "";
 }
 
+export function normalizeSourceUrl(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  let url: URL;
+  try {
+    url = new URL(trimmed);
+  } catch {
+    return "";
+  }
+  if (url.protocol !== "https:" || url.username || url.password || blockedImageHost(url.hostname)) {
+    return "";
+  }
+  url.hash = "";
+  url.hostname = url.hostname.toLowerCase();
+  if (url.pathname.length > 1) url.pathname = url.pathname.replace(/\/+$/, "");
+  return url.toString();
+}
+
+function resolveSourceUrl(value: unknown, errors: FieldError[]): string {
+  if (value === undefined || value === null || value === "") return "";
+  if (typeof value !== "string") {
+    push(errors, "sourceUrl", "L'adresse d'origine doit être une URL https, ou absente.");
+    return "";
+  }
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (trimmed.length > 500) {
+    push(errors, "sourceUrl", "L'adresse d'origine est trop longue.");
+    return "";
+  }
+  const source = normalizeSourceUrl(trimmed);
+  if (!source) {
+    push(errors, "sourceUrl", "L'adresse d'origine doit être une URL https publique.");
+    return "";
+  }
+  return source;
+}
+
 function readIngredients(value: unknown, errors: FieldError[]): Ingredient[] {
   if (!Array.isArray(value)) {
     push(errors, "ingredients", "Les ingrédients doivent être une liste.");
@@ -260,6 +298,7 @@ export function parseRecipeFields(
   const steps = readSteps(record.steps, errors);
   const tags = readTags(record.tags, errors);
   const image = resolveImage(record.image, errors, options?.localImageExists);
+  const sourceUrl = resolveSourceUrl(record.sourceUrl, errors);
 
   const idSource = typeof record.id === "string" ? record.id.trim() : "";
   const id = idSource || slug;
@@ -283,6 +322,7 @@ export function parseRecipeFields(
     ingredients,
     steps,
     tags,
+    sourceUrl,
   };
   return { ok: true, recipe };
 }

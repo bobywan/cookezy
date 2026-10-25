@@ -1,4 +1,5 @@
 import { getSql } from "@/lib/db";
+import { storedImageReady } from "@/lib/recipe-images";
 import { parseRecipe } from "@/lib/recipe-schema";
 import { insertRecipe } from "@/lib/recipes";
 import type { Recipe } from "@/lib/types";
@@ -12,8 +13,8 @@ export type RecipeRequest = {
 type RequestRow = { id: string; data: Recipe | string; created_at: Date | string };
 
 function readRecipe(data: Recipe | string): Recipe {
-  if (typeof data === "string") return JSON.parse(data) as Recipe;
-  return data;
+  const recipe = typeof data === "string" ? (JSON.parse(data) as Recipe) : data;
+  return { ...recipe, sourceUrl: recipe.sourceUrl ?? "" };
 }
 
 async function ensureTable() {
@@ -51,10 +52,55 @@ export async function listRecipeRequests(): Promise<RecipeRequest[]> {
   }));
 }
 
-export async function deleteRecipeRequest(id: string) {
+export async function findRecipeRequestBySourceUrl(
+  sourceUrl: string,
+): Promise<RecipeRequest | null> {
+  if (!sourceUrl) return null;
   await ensureTable();
   const sql = getSql();
-  await sql`DELETE FROM recipe_requests WHERE id = ${id}`;
+  const rows = (await sql`
+    SELECT id, data, created_at FROM recipe_requests
+    WHERE data->>'sourceUrl' = ${sourceUrl}
+    ORDER BY created_at DESC
+    LIMIT 1
+  `) as RequestRow[];
+  const row = rows[0];
+  if (!row) return null;
+  return {
+    id: row.id,
+    createdAt: new Date(row.created_at).toISOString(),
+    recipe: readRecipe(row.data),
+  };
+}
+
+export async function updateRecipeRequest(id: string, recipe: Recipe): Promise<void> {
+  await ensureTable();
+  const sql = getSql();
+  await sql.query("UPDATE recipe_requests SET data = $2::jsonb WHERE id = $1", [
+    id,
+    JSON.stringify(recipe),
+  ]);
+}
+
+export async function deleteRecipeRequestsBySourceUrl(sourceUrl: string): Promise<Recipe[]> {
+  if (!sourceUrl) return [];
+  await ensureTable();
+  const sql = getSql();
+  const rows = (await sql`
+    DELETE FROM recipe_requests WHERE data->>'sourceUrl' = ${sourceUrl} RETURNING data
+  `) as { data: Recipe | string }[];
+  return rows.map((row) => readRecipe(row.data));
+}
+
+export async function deleteRecipeRequest(id: string): Promise<Recipe | null> {
+  await ensureTable();
+  const sql = getSql();
+  const rows = (await sql`
+    DELETE FROM recipe_requests WHERE id = ${id} RETURNING data
+  `) as { data: Recipe | string }[];
+  const row = rows[0];
+  if (!row) return null;
+  return readRecipe(row.data);
 }
 
 export async function approveRecipeRequest(
@@ -70,6 +116,9 @@ export async function approveRecipeRequest(
   const parsed = parseRecipe(readRecipe(row.data));
   if (!parsed.ok) {
     return { ok: false, message: parsed.errors.map((error) => error.message).join(" ") };
+  }
+  if (parsed.recipe.image && !(await storedImageReady(parsed.recipe.image))) {
+    return { ok: false, message: "L'image de cette demande n'est plus disponible." };
   }
   const inserted = await insertRecipe(parsed.recipe);
   if (inserted.status === "conflict") {
