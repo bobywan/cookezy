@@ -3,6 +3,8 @@ import { cookies } from "next/headers";
 
 const COOKIE = "cookezy_admin";
 const MIN_ADMIN_PASSWORD_LENGTH = 12;
+const SESSION_30_DAYS = 60 * 60 * 24 * 30;
+export const SESSION_7_DAYS = 60 * 60 * 24 * 7;
 
 export function adminPasswordMessage(): string | null {
   const password = process.env.ADMIN_PASSWORD ?? "";
@@ -38,7 +40,11 @@ export async function isAdmin(): Promise<boolean> {
   return safeEqual(value, sessionToken(password));
 }
 
-export async function startAdminSession(password: string): Promise<boolean> {
+export async function startAdminSession(
+  password: string,
+  maxAge = SESSION_30_DAYS,
+): Promise<boolean> {
+  if (maxAge !== SESSION_30_DAYS && maxAge !== SESSION_7_DAYS) return false;
   const expected = configuredPassword();
   if (!expected || password.length > 200 || !safeEqual(password, expected)) return false;
   const jar = await cookies();
@@ -47,7 +53,7 @@ export async function startAdminSession(password: string): Promise<boolean> {
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: 60 * 60 * 24 * 30,
+    maxAge,
   });
   return true;
 }
