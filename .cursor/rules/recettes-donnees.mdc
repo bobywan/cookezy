@@ -2,22 +2,25 @@
 description: Modèle et checklist pour ajouter une recette dans le carnet Cookezy.
 globs:
   - "lib/recipes.ts"
+  - "lib/recipe-schema.ts"
   - "lib/types.ts"
   - "content/recipes/*.json"
+  - "app/api/recettes/**"
 ---
 
 # Données recettes (modèle Cookezy)
 
-Le schéma TypeScript est la source de vérité : types `Recipe` et `Ingredient` dans [`lib/types.ts`](lib/types.ts). Chaque recette est un fichier JSON dans [`content/recipes/`](content/recipes/) (nom du fichier = `slug` + `.json`, en **kebab-case**). Le fichier [`lib/recipes.ts`](lib/recipes.ts) importe ces JSON et exporte le tableau `recipes` + `getRecipeBySlug`.
+Le schéma TypeScript est la source de vérité : types `Recipe` et `Ingredient` dans [`lib/types.ts`](lib/types.ts). Le catalogue vivant est la table Neon `recipes` (`data` jsonb). [`lib/recipes.ts`](lib/recipes.ts) lit cette table à chaque requête. Les fichiers [`content/recipes/`](content/recipes/) ne servent qu’au chargement initial (`npm run db:seed`).
 
-## Checklist à chaque nouvelle recette
+Le formulaire `/proposer-une-recette` enregistre une demande dans `recipe_requests`. Il ne publie pas. L’ajout au catalogue se fait sur `/demandes` (`ADMIN_PASSWORD`) : **Ajouter** appelle `insertRecipe` puis retire la demande, **Supprimer** efface la demande. Un slug déjà pris laisse la demande en place. `POST /api/recettes` (clé `RECIPE_API_KEYS`) reste un accès direct, hors formulaire. Le guide à donner à une IA est [`docs/publier-une-recette.md`](docs/publier-une-recette.md).
 
-- **Fichier** : `content/recipes/<slug>.json` (ex. `content/recipes/tarte-pommes.json`).
-- **`id`** : chaîne unique parmi toutes les recettes (ex. `"4"`).
-- **`slug`** : identique au nom de fichier sans `.json`, unique, **kebab-case** ; utilisé dans l’URL `/recettes/[slug]` et par `generateStaticParams`.
+## Checklist pour une recette publiée
+
+- **`id`** : chaîne unique. Optionnelle à l’API : elle vaut alors le `slug`.
+- **`slug`** : unique, **kebab-case** ; utilisé dans l’URL `/recettes/[slug]`. Optionnel à l’API : déduit du titre.
 - **`title`** : titre affiché (typo française cohérente avec le site).
 - **`description`** : court paragraphe pour cartes et meta.
-- **`image`** : chemin absolu du site (ex. `/images/recettes/mon-slug.jpg`) ou URL absolue HTTPS ; pour les fichiers locaux, placer l’image sous `public/images/recettes/`.
+- **`image`** : vide ou absente (bloc sans photo), URL `https`, ou chemin `/images/recettes/...` dont le fichier existe dans `public/`. Un chemin local inconnu est enregistré vide.
 - **`category`** : exactement une de `entrée` | `plat` | `dessert` | `snack`.
 - **`difficulty`** : `facile` | `moyen` | `difficile`.
 - **`prepTime` / `cookTime`** : minutes, nombres entiers (0 si aucune).
@@ -26,9 +29,9 @@ Le schéma TypeScript est la source de vérité : types `Recipe` et `Ingredient`
 - **`steps`** : tableau de chaînes, **un élément = une étape**, ordre = ordre d’affichage et mode pas à pas.
 - **`tags`** : quelques mots-clés en minuscules, sans `#` dans la donnée (le `#` est ajouté en UI si besoin).
 
-Après ajout : dans [`lib/recipes.ts`](lib/recipes.ts), ajouter `import maRecette from "@/content/recipes/<slug>.json"` et inclure `maRecette` dans le tableau `recipes`. Vérifier qu’aucun doublon de `slug` / `id` ; la page `/recettes/[slug]` est générée statiquement à partir de ce tableau.
+Les cinq recettes d’origine se rechargent avec `npm run db:seed` (idempotent). Un nouveau JSON dans `content/recipes/` n’apparaît sur le site qu’après ce script. Une demande acceptée sur `/demandes`, ou un `POST /api/recettes`, écrit directement dans `recipes`.
 
-## Modèle à copier-coller (`content/recipes/nom-en-kebab.json`)
+## Modèle JSON (seed ou corps de `POST /api/recettes`)
 
 JSON valide (guillemets doubles, pas de virgule finale).
 

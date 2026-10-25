@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { RecipeImage } from "@/components/RecipeImage";
 import { categoryBadgeClass, difficultyBadgeClass } from "@/lib/recipe-badges";
 import type { Recipe } from "@/lib/types";
 
@@ -17,10 +17,9 @@ export default function RecipeCard({ recipe, priority = false }: Props) {
       className="group flex touch-manipulation flex-col overflow-hidden rounded-[--radius-card] border border-neutral-200 bg-white shadow-[--shadow-card] transition-[box-shadow,transform] active:scale-[0.99] hover:shadow-md md:active:scale-100"
     >
       <div className="relative aspect-[5/4] w-full overflow-hidden md:aspect-auto md:h-48 xl:h-52">
-        <Image
+        <RecipeImage
           src={recipe.image}
           alt={recipe.title}
-          fill
           priority={priority}
           className="object-cover transition-transform duration-300 group-hover:scale-105"
           sizes="(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 33vw"

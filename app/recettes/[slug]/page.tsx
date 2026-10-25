@@ -1,23 +1,24 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { RecipeImage } from "@/components/RecipeImage";
 import RecipeScaledSections from "@/components/RecipeScaledSections";
 import RecipeShareActions from "@/components/RecipeShareActions";
+import { RecipesUnavailable } from "@/components/RecipesUnavailable";
+import { hasDatabase } from "@/lib/db";
 import { categoryBadgeClass, difficultyBadgeClass } from "@/lib/recipe-badges";
-import { getRecipeBySlug, recipes } from "@/lib/recipes";
+import { getRecipeBySlug } from "@/lib/recipes";
+
+export const dynamic = "force-dynamic";
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
 
-export async function generateStaticParams() {
-  return recipes.map((r) => ({ slug: r.slug }));
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  if (!hasDatabase()) return {};
   const { slug } = await params;
-  const recipe = getRecipeBySlug(slug);
+  const recipe = await getRecipeBySlug(slug);
   if (!recipe) return {};
   return {
     title: `${recipe.title} — Cookezy`,
@@ -26,8 +27,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function RecipePage({ params }: Props) {
+  if (!hasDatabase()) return <RecipesUnavailable />;
   const { slug } = await params;
-  const recipe = getRecipeBySlug(slug);
+  const recipe = await getRecipeBySlug(slug);
 
   if (!recipe) notFound();
 
@@ -60,11 +62,9 @@ export default async function RecipePage({ params }: Props) {
 
       <article className="recipe-print-root mx-auto max-w-3xl px-safe pt-5 pb-28 md:pt-10 md:pb-28 xl:max-w-4xl">
         <div className="relative mb-6 aspect-[4/3] w-full min-h-48 overflow-hidden rounded-[--radius-card] sm:min-h-56 md:mb-8 md:aspect-auto md:h-72 md:min-h-0 lg:h-80">
-          <Image
+          <RecipeImage
             src={recipe.image}
             alt={recipe.title}
-            fill
-            className="object-cover"
             priority
             sizes="(max-width: 768px) 100vw, (max-width: 1280px) 90vw, 896px"
           />
