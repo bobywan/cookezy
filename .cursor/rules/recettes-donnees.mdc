@@ -12,7 +12,7 @@ globs:
 
 Le schéma TypeScript est la source de vérité : types `Recipe` et `Ingredient` dans [`lib/types.ts`](lib/types.ts). Le catalogue vivant est la table Neon `recipes` (`data` jsonb). [`lib/recipes.ts`](lib/recipes.ts) lit cette table à chaque requête. Les fichiers [`content/recipes/`](content/recipes/) ne servent qu’au chargement initial (`npm run db:seed`).
 
-Une personne autorisée publie avec `POST /api/recettes` (clé `RECIPE_API_KEYS`). Le guide à coller dans l’IA est [`docs/publier-une-recette.md`](docs/publier-une-recette.md). Le formulaire public reste un e-mail.
+Le formulaire `/proposer-une-recette` enregistre une demande dans `recipe_requests`. Il ne publie pas. L’ajout au catalogue se fait sur `/demandes` (`ADMIN_PASSWORD`) : **Ajouter** appelle `insertRecipe` puis retire la demande, **Supprimer** efface la demande. Un slug déjà pris laisse la demande en place. `POST /api/recettes` (clé `RECIPE_API_KEYS`) reste un accès direct, hors formulaire. Le guide à donner à une IA est [`docs/publier-une-recette.md`](docs/publier-une-recette.md).
 
 ## Checklist pour une recette publiée
 
@@ -29,7 +29,7 @@ Une personne autorisée publie avec `POST /api/recettes` (clé `RECIPE_API_KEYS`
 - **`steps`** : tableau de chaînes, **un élément = une étape**, ordre = ordre d’affichage et mode pas à pas.
 - **`tags`** : quelques mots-clés en minuscules, sans `#` dans la donnée (le `#` est ajouté en UI si besoin).
 
-Les cinq recettes d’origine se rechargent avec `npm run db:seed` (idempotent). Un nouveau JSON dans `content/recipes/` n’apparaît sur le site qu’après ce script, ou via l’API.
+Les cinq recettes d’origine se rechargent avec `npm run db:seed` (idempotent). Un nouveau JSON dans `content/recipes/` n’apparaît sur le site qu’après ce script. Une demande acceptée sur `/demandes`, ou un `POST /api/recettes`, écrit directement dans `recipes`.
 
 ## Modèle JSON (seed ou corps de `POST /api/recettes`)
 
