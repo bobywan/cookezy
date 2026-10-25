@@ -2,15 +2,30 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import { importerImage } from "@/app/actions/images";
 import {
   envoyerImageRecette,
   modifierRecette,
   oublierImageRecette,
 } from "@/app/actions/modifier-recette";
+import { AiKeySettings } from "@/components/AiKeySettings";
 import { RecipeImage } from "@/components/RecipeImage";
+import { draftRecipe } from "@/lib/ai/draft-recipe";
+import { type AiSettings, activeApiKey } from "@/lib/ai/settings";
 import type { Recipe } from "@/lib/types";
 
 type DraftIngredient = { quantity: string; unit: string; name: string };
+type Phase = "lecture" | "ia";
+type ImageOffer = {
+  id: string;
+  previewUrl: string;
+  choice: "pending" | "accepted" | "declined";
+};
+
+const phaseLabel: Record<Phase, string> = {
+  lecture: "Lecture de la page…",
+  ia: "L'IA prépare la recette…",
+};
 
 const inputCls =
   "w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-300";
@@ -47,6 +62,12 @@ export function RecipeEditor({ recipe }: { recipe: Recipe }) {
   const [pending, setPending] = useState(false);
   const [imageMessage, setImageMessage] = useState("");
   const [imageBusy, setImageBusy] = useState(false);
+  const [settings, setSettings] = useState<AiSettings>({ provider: "gemini", keys: {} });
+  const [phase, setPhase] = useState<Phase | null>(null);
+  const [aiError, setAiError] = useState("");
+  const [pageText, setPageText] = useState("");
+  const [offer, setOffer] = useState<ImageOffer | null>(null);
+  const [previewBroken, setPreviewBroken] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const chooseImage = async (file: File | undefined) => {
@@ -64,6 +85,128 @@ export function RecipeEditor({ recipe }: { recipe: Recipe }) {
       return;
     }
     setImage(result.path);
+  };
+
+  const applyDraft = (next: Recipe) => {
+    setTitle(next.title);
+    setDescription(next.description);
+    setCategory(next.category);
+    setDifficulty(next.difficulty);
+    setPrepTime(String(next.prepTime));
+    setCookTime(String(next.cookTime));
+    setServings(String(next.servings));
+    setTags(next.tags.join(", "));
+    setIngredients(draftIngredients(next));
+    setSteps(next.steps.length > 0 ? next.steps : [""]);
+  };
+
+  const draftIntoForm = async (source: string): Promise<boolean> => {
+    const key = activeApiKey(settings);
+    if (!key) {
+      setAiError("Enregistre d'abord la clé de ton service d'IA.");
+      return false;
+    }
+    try {
+      const result = await draftRecipe(settings.provider, key, source);
+      if (!result.ok) {
+        setAiError(result.errors.map((item) => item.message).join(" "));
+        return false;
+      }
+      applyDraft(result.recipe);
+      return true;
+    } catch (caught) {
+      setAiError(caught instanceof Error ? caught.message : "L'aide IA a échoué.");
+      return false;
+    }
+  };
+
+  const prepareFromPage = async () => {
+    const page = sourceUrl.trim();
+    if (!page) {
+      setAiError("L'URL est requise.");
+      return;
+    }
+    if (!activeApiKey(settings)) {
+      setAiError("Enregistre d'abord la clé de ton service d'IA.");
+      return;
+    }
+    setPhase("lecture");
+    setAiError("");
+    setOffer(null);
+    setPreviewBroken(false);
+    setPageText("");
+    try {
+      const response = await fetch("/api/extraire-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: page }),
+      });
+      const data = (await response.json()) as {
+        ok: boolean;
+        text?: string;
+        message?: string;
+        imageId?: string;
+        imageUrl?: string;
+      };
+      if (!response.ok || !data.ok || !data.text) {
+        setAiError(data.message ?? "La page n'a pas pu être lue.");
+        return;
+      }
+      const pendingOffer: ImageOffer | null =
+        data.imageId && data.imageUrl
+          ? { id: data.imageId, previewUrl: data.imageUrl, choice: "pending" }
+          : null;
+      setPhase("ia");
+      const ready = await draftIntoForm(
+        `Voici le texte d'une page de recette. Transforme-le en recette Cookezy.\n\n${data.text}`,
+      );
+      if (!ready) return;
+      setSourceUrl(page);
+      setPageText(data.text);
+      if (pendingOffer) setOffer(pendingOffer);
+    } catch {
+      setAiError("La page n'a pas pu être lue.");
+    } finally {
+      setPhase(null);
+    }
+  };
+
+  const rereadWithAi = async () => {
+    if (!pageText.trim()) return;
+    if (!activeApiKey(settings)) {
+      setAiError("Enregistre d'abord la clé de ton service d'IA.");
+      return;
+    }
+    setPhase("ia");
+    setAiError("");
+    try {
+      await draftIntoForm(
+        `Voici le texte d'une page de recette. Transforme-le en recette Cookezy.\n\n${pageText}`,
+      );
+    } finally {
+      setPhase(null);
+    }
+  };
+
+  const acceptPageImage = async () => {
+    if (!offer) return;
+    setImageBusy(true);
+    setImageMessage("");
+    try {
+      const result = await importerImage(offer.id);
+      if (!result.ok) {
+        setImageMessage(result.message);
+        return;
+      }
+      if (image !== recipe.image && image !== result.path) void oublierImageRecette(image);
+      setImage(result.path);
+      setPreviewBroken(false);
+      setOffer({ id: offer.id, previewUrl: result.path, choice: "accepted" });
+    } catch {
+      setImageMessage("L'image n'a pas pu être enregistrée.");
+    } finally {
+      setImageBusy(false);
+    }
   };
 
   const save = async () => {
@@ -119,6 +262,20 @@ export function RecipeEditor({ recipe }: { recipe: Recipe }) {
     );
   }
 
+  if (phase) {
+    return (
+      <div
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+        className="flex flex-col items-center gap-4 rounded-[--radius-card] border border-brand-100 bg-white px-6 py-16 text-center shadow-[--shadow-card]"
+      >
+        <Spinner large />
+        <p className="text-base font-medium text-neutral-700">{phaseLabel[phase]}</p>
+      </div>
+    );
+  }
+
   return (
     <form
       className="space-y-4"
@@ -127,6 +284,54 @@ export function RecipeEditor({ recipe }: { recipe: Recipe }) {
         void save();
       }}
     >
+      <AiKeySettings onChange={setSettings} />
+      <Section title="Mettre à jour depuis une page">
+        <Field label="Adresse de la page">
+          <input
+            type="url"
+            value={sourceUrl}
+            onChange={(event) => setSourceUrl(event.target.value)}
+            placeholder="https://"
+            className={inputCls}
+          />
+        </Field>
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => void prepareFromPage()}
+            disabled={imageBusy || pending}
+            className="min-h-11 rounded-[--radius-card] bg-brand-600 px-4 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-60"
+          >
+            Mettre à jour avec l&apos;IA
+          </button>
+          {pageText && (
+            <button
+              type="button"
+              onClick={() => void rereadWithAi()}
+              disabled={imageBusy || pending}
+              className="min-h-11 rounded-[--radius-card] border border-neutral-200 bg-white px-4 text-sm font-medium text-neutral-700 disabled:opacity-60"
+            >
+              Relire avec l&apos;IA
+            </button>
+          )}
+        </div>
+        {aiError && (
+          <p role="alert" className="text-sm text-red-700">
+            {aiError}
+          </p>
+        )}
+      </Section>
+      {offer && (
+        <PageImageChoice
+          offer={offer}
+          busy={imageBusy}
+          broken={previewBroken}
+          error={imageMessage}
+          onAccept={() => void acceptPageImage()}
+          onDecline={() => setOffer({ ...offer, choice: "declined" })}
+          onBroken={() => setPreviewBroken(true)}
+        />
+      )}
       <Section title="Informations">
         <Field label="Titre" required>
           <input
@@ -256,14 +461,6 @@ export function RecipeEditor({ recipe }: { recipe: Recipe }) {
             </p>
           )}
         </div>
-        <Field label="Adresse d'origine">
-          <input
-            type="url"
-            value={sourceUrl}
-            onChange={(event) => setSourceUrl(event.target.value)}
-            className={inputCls}
-          />
-        </Field>
       </Section>
 
       <Section title="Ingrédients">
@@ -443,5 +640,95 @@ function Field({
         {children}
       </label>
     </div>
+  );
+}
+
+function Spinner({ large = false }: { large?: boolean }) {
+  const size = large ? "h-8 w-8 border-[3px]" : "h-4 w-4 border-2";
+  return (
+    <span
+      className={`inline-block shrink-0 animate-spin rounded-[50%] border-brand-100 border-t-brand-600 ${size}`}
+      aria-hidden
+    />
+  );
+}
+
+function PageImageChoice({
+  offer,
+  busy,
+  broken,
+  error,
+  onAccept,
+  onDecline,
+  onBroken,
+}: {
+  offer: ImageOffer;
+  busy: boolean;
+  broken: boolean;
+  error: string;
+  onAccept: () => void;
+  onDecline: () => void;
+  onBroken: () => void;
+}) {
+  const note =
+    offer.choice === "accepted"
+      ? "Cette photo remplacera celle de la recette après l'enregistrement."
+      : offer.choice === "declined"
+        ? "La photo actuelle est conservée."
+        : "Tu peux l'utiliser comme photo de la recette.";
+
+  return (
+    <section
+      aria-busy={busy}
+      className="space-y-4 rounded-[--radius-card] border border-neutral-200 bg-white p-6 shadow-[--shadow-card]"
+    >
+      <h2 className="text-base font-semibold text-neutral-900">Image trouvée sur la page</h2>
+      <p className="text-sm text-neutral-500">{note}</p>
+      {broken ? (
+        <p className="text-sm text-neutral-600">
+          L&apos;aperçu n&apos;a pas pu s&apos;afficher. Tu peux quand même utiliser l&apos;image.
+        </p>
+      ) : (
+        <div className="relative aspect-[4/3] overflow-hidden rounded-[--radius-card] bg-neutral-100">
+          {/* biome-ignore lint/performance/noImgElement: l'aperçu vient de la page d'origine */}
+          <img
+            src={offer.previewUrl}
+            alt="Aperçu de l'image trouvée"
+            referrerPolicy="no-referrer"
+            onError={onBroken}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        </div>
+      )}
+      {busy && (
+        <p role="status" className="flex items-center gap-2 text-sm font-medium text-neutral-700">
+          <Spinner />
+          Préparation de l&apos;image…
+        </p>
+      )}
+      {error && offer.choice !== "declined" && (
+        <p role="alert" className="text-sm text-red-700">
+          {error}
+        </p>
+      )}
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <button
+          type="button"
+          onClick={onAccept}
+          disabled={busy || offer.choice === "accepted"}
+          className="min-h-11 rounded-[--radius-card] bg-brand-600 px-4 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-60"
+        >
+          Utiliser cette image
+        </button>
+        <button
+          type="button"
+          onClick={onDecline}
+          disabled={busy || offer.choice === "declined"}
+          className="min-h-11 rounded-[--radius-card] border border-neutral-200 bg-white px-4 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-60"
+        >
+          Garder la photo actuelle
+        </button>
+      </div>
+    </section>
   );
 }
